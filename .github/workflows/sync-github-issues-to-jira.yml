@@ -1,0 +1,175 @@
+name: Sync GitHub issues -> Jira (AH)
+
+on:
+  issues:
+    types: [labeled, closed, reopened]
+
+permissions:
+  issues: write
+  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.node_id || github.event.issue.number }}
+  cancel-in-progress: true
+  
+jobs:
+  sync:
+    if: >
+      (github.event.action == 'labeled' && github.event.label && github.event.label.name == 'jira')
+      || github.event.action == 'closed'
+      || github.event.action == 'reopened'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install jq
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Normalize env & echo context (debug)
+        id: prep
+        shell: bash
+        env:
+          RAW_JIRA_BASE: ${{ secrets.JIRA_BASE_URL }}
+        run: |
+          set -euo pipefail
+          JIRA_BASE="${RAW_JIRA_BASE%/}"
+          echo "base=$JIRA_BASE" >> "$GITHUB_OUTPUT"
+          echo "Action: ${{ github.event.action }}"
+          echo "Labels: $(echo '${{ toJson(github.event.issue.labels) }}' | jq -r '.[].name' | xargs echo)"
+
+      - name: Read existing Jira key from GH issue comments (page up to 100)
+        id: key
+        shell: bash
+        env:
+          GH_API:   ${{ github.api_url }}
+          GH_REPO:  ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_NUM:   ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          key=$(
+            curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+              "$GH_API/repos/$GH_REPO/issues/$GH_NUM/comments?per_page=100" \
+            | jq -r '.[].body // ""' \
+            | grep -Eo '^Synced to Jira:[[:space:]]*[A-Z0-9]+-[0-9]+' || true \
+            | sed -E 's/^Synced to Jira:[[:space:]]*//' \
+            | head -n1
+          )
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+          echo "Found Jira key: ${key:-<none>}"
+
+      - name: Create Jira issue (if not yet linked)
+        if: >
+          steps.key.outputs.key == '' &&
+          ( github.event.action == 'opened' ||
+            (github.event.action == 'labeled' && github.event.label && github.event.label.name == 'jira') )
+        shell: bash
+        env:
+          JIRA_BASE:    ${{ steps.prep.outputs.base }}
+          JIRA_EMAIL:   ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_TOKEN:   ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_PROJECT: ${{ secrets.JIRA_PROJECT_KEY }}
+          GH_TITLE:     ${{ github.event.issue.title }}
+          GH_BODY:      ${{ github.event.issue.body }}
+          GH_URL:       ${{ github.event.issue.html_url }}
+          GH_API:       ${{ github.api_url }}
+          GH_REPO:      ${{ github.repository }}
+          GH_NUM:       ${{ github.event.issue.number }}
+          GH_TOKEN:     ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          jq -n \
+            --arg proj "$JIRA_PROJECT" \
+            --arg sum  "$GH_TITLE" \
+            --arg url  "$GH_URL" \
+            --arg body "${GH_BODY:-}" \
+            'def text($t): {type:"text", text:$t};
+             {
+               fields: {
+                 project:   { key: $proj },
+                 issuetype: { name: "Task" },
+                 summary:    $sum,
+                 description: {
+                   type: "doc",
+                   version: 1,
+                   content: [
+                     { type: "paragraph", content: [ text("GitHub: " + $url) ] },
+                     { type: "paragraph", content: [ text($body) ] }
+                   ]
+                 }
+               }
+             }' > payload.json
+
+
+          http=$(curl --fail-with-body -sS -u "$JIRA_EMAIL:$JIRA_TOKEN" \
+            -H "Content-Type: application/json" \
+            -o /tmp/jira_resp.json -w "%{http_code}" \
+            -X POST "$JIRA_BASE/rest/api/3/issue" \
+            --data @payload.json || true)
+
+          echo "HTTP: $http"
+          if [[ "$http" != "201" ]]; then
+            echo "Jira API error (expected 201). Response:"; cat /tmp/jira_resp.json
+            exit 1
+          fi
+
+          key=$(jq -r '.key // empty' /tmp/jira_resp.json)
+          if [[ -z "$key" ]]; then
+            echo "No 'key' in Jira response. Response:"; cat /tmp/jira_resp.json; exit 1
+          fi
+          echo "Created Jira issue: $key"
+
+          curl --fail-with-body -sS \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            -X POST "$GH_API/repos/$GH_REPO/issues/$GH_NUM/comments" \
+            -d "$(jq -n --arg body "Synced to Jira: $key" '{body:$body}')"
+
+      - name: Transition Jira to Done on GH issue close
+        if: github.event.action == 'closed' && steps.key.outputs.key != ''
+        shell: bash
+        env:
+          JIRA_BASE:   ${{ steps.prep.outputs.base }}
+          JIRA_EMAIL:  ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_TOKEN:  ${{ secrets.JIRA_API_TOKEN }}
+          KEY:         ${{ steps.key.outputs.key }}
+          DONE_NAME:   ${{ vars.JIRA_DONE_NAME }}
+        run: |
+          set -euo pipefail
+          name="${DONE_NAME:-Done}"
+          trans=$(curl -sS -u "$JIRA_EMAIL:$JIRA_TOKEN" "$JIRA_BASE/rest/api/3/issue/$KEY/transitions")
+          echo "Available transitions:"; echo "$trans" | jq -r '.transitions[].name'
+          id=$(echo "$trans" | jq -r --arg n "$name" '.transitions[] | select(.name==$n) | .id')
+          if [ -z "$id" ]; then
+            echo "No transition named '$name'"; exit 0
+          fi
+          curl --fail-with-body -sS -u "$JIRA_EMAIL:$JIRA_TOKEN" -H "Content-Type: application/json" \
+            -X POST "$JIRA_BASE/rest/api/3/issue/$KEY/transitions" \
+            --data "$(jq -n --arg id "$id" '{transition:{id:$id}}')"
+
+      - name: Reopen in Jira on GH issue reopen (to In Progress / To Do)
+        if: github.event.action == 'reopened' && steps.key.outputs.key != ''
+        shell: bash
+        env:
+          JIRA_BASE:   ${{ steps.prep.outputs.base }}
+          JIRA_EMAIL:  ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_TOKEN:  ${{ secrets.JIRA_API_TOKEN }}
+          KEY:         ${{ steps.key.outputs.key }}
+          REOPEN_NAME: ${{ vars.JIRA_REOPEN_NAME }}
+        run: |
+          set -euo pipefail
+          primary="${REOPEN_NAME:-In Progress}"
+          fallback="To Do"
+          trans=$(curl -sS -u "$JIRA_EMAIL:$JIRA_TOKEN" "$JIRA_BASE/rest/api/3/issue/$KEY/transitions")
+          echo "Available transitions:"; echo "$trans" | jq -r '.transitions[].name'
+          id=$(echo "$trans" | jq -r --arg n "$primary" '.transitions[] | select(.name==$n) | .id')
+          if [ -z "$id" ]; then
+            id=$(echo "$trans" | jq -r --arg n "$fallback" '.transitions[] | select(.name==$n) | .id')
+          fi
+          if [ -z "$id" ]; then
+            echo "No matching reopen transition."; exit 0
+          fi
+          curl --fail-with-body -sS -u "$JIRA_EMAIL:$JIRA_TOKEN" -H "Content-Type: application/json" \
+            -X POST "$JIRA_BASE/rest/api/3/issue/$KEY/transitions" \
+            --data "$(jq -n --arg id "$id" '{transition:{id:$id}}')"

@@ -1,0 +1,19 @@
+spring:
+  profiles:
+    active: dev
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  web:
+    client:
+      connect-timeout: 5000
+      read-timeout: 5000
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO

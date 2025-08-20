@@ -1,4 +1,4 @@
-name: Sync GitHub issues -> Jira (AH)
+name: Sync GitHub issues -> Jira
 
 on:
   issues:
@@ -50,18 +50,17 @@ jobs:
             curl -sS -H "Authorization: Bearer $GH_TOKEN" \
               "$GH_API/repos/$GH_REPO/issues/$GH_NUM/comments?per_page=100" \
             | jq -r '.[].body // ""' \
-            | grep -Eo '^Synced to Jira:[[:space:]]*[A-Z0-9]+-[0-9]+' || true \
-            | sed -E 's/^Synced to Jira:[[:space:]]*//' \
+            | sed -nE 's/.*Synced to Jira:[[:space:]]*([A-Z][A-Z0-9]+-[0-9]+).*/\1/p' \
             | head -n1
           )
+          key="$(printf '%s' "${key:-}" | tr -d '\r' | xargs)"
           echo "key=$key" >> "$GITHUB_OUTPUT"
           echo "Found Jira key: ${key:-<none>}"
 
       - name: Create Jira issue (if not yet linked)
         if: >
           steps.key.outputs.key == '' &&
-          ( github.event.action == 'opened' ||
-            (github.event.action == 'labeled' && github.event.label && github.event.label.name == 'jira') )
+          (github.event.action == 'labeled' && github.event.label && github.event.label.name == 'jira')
         shell: bash
         env:
           JIRA_BASE:    ${{ steps.prep.outputs.base }}

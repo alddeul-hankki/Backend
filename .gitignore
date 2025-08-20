@@ -1,16 +1,14 @@
-# Compiled class file
+# =========================
+# Build & Dependency Files
+# =========================
+/build/
+/.gradle
+!gradle/wrapper/gradle-wrapper.jar
+
+# =========================
+# Java
+# =========================
 *.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
 *.nar
@@ -19,6 +17,56 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# JVM crash logs
 hs_err_pid*
 replay_pid*
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# IDEs
+# =========================
+## IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+/out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+## Eclipse / Spring Tool Suite
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+## NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+## VS Code
+.vscode/
+
+# =========================
+# Misc
+# =========================
+HELP.md
+.mtj.tmp/
+
+# =========================
+# secret variable
+# =========================
+.env

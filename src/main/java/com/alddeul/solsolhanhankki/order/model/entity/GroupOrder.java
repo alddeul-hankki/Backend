@@ -45,12 +45,6 @@ public class GroupOrder extends BaseIdentityEntity {
             foreignKey = @ForeignKey(name = "fk_group_order_pickup"))
     private PickupZone pickupZone;
 
-    // 개설자
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_group_order_owner"))
-    private SolUser owner;
-
     @OneToMany(mappedBy = "groupOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupOrderMember> members = new ArrayList<>();
 

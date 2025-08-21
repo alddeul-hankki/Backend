@@ -1,13 +1,12 @@
 package com.alddeul.solsolhanhankki.wallet.model.entity;
 
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 import com.alddeul.solsolhanhankki.user.model.entity.SolUser;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Check;
-
-import java.time.OffsetDateTime;
 
 // 사용자·금액·상태(HOLD -> CAPTURE -> REFUND)를 추적하는 엔티티 입니다.
 @Getter
@@ -20,10 +19,7 @@ import java.time.OffsetDateTime;
         },
         uniqueConstraints = @UniqueConstraint(name = "uk_intent_idem", columnNames = "idempotency_key"))
 @Check(constraints = "amount >= 0")
-public class PaymentIntent {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class PaymentIntent extends BaseIdentityEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false,
@@ -35,7 +31,13 @@ public class PaymentIntent {
 
     // 상태 머신
     public enum State {
-        REQUIRES_HOLD, HOLD_SUCCEEDED, HOLD_FAILED, CAPTURED, REFUND_PENDING, REFUNDED, CANCELED
+        REQUIRES_HOLD,
+        HOLD_SUCCEEDED,
+        HOLD_FAILED,
+        CAPTURED,
+        REFUND_PENDING,
+        REFUNDED,
+        CANCELED
     }
 
     @Enumerated(EnumType.STRING)
@@ -48,9 +50,4 @@ public class PaymentIntent {
 
     @Column(name = "idempotency_key", nullable = false, length = 128)
     private String idempotencyKey;
-
-    @Column(name = "created_at",
-            columnDefinition = "timestamptz NOT NULL DEFAULT now()",
-            insertable = false, updatable = false)
-    private OffsetDateTime createdAt;
 }

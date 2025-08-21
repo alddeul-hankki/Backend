@@ -1,7 +1,10 @@
 package com.alddeul.solsolhanhankki.wallet.model.entity;
 
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Check;
 
 import java.time.OffsetDateTime;
@@ -17,10 +20,7 @@ import java.time.OffsetDateTime;
         },
         uniqueConstraints = @UniqueConstraint(name = "uk_hold_intent", columnNames = "intent_id"))
 @Check(constraints = "amount >= 0")
-public class WalletHold {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class WalletHold extends BaseIdentityEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "wallet_id", nullable = false,
@@ -35,7 +35,12 @@ public class WalletHold {
     @Column(name = "amount", nullable = false)
     private long amount;
 
-    public enum State {ACTIVE, CAPTURED, RELEASED, EXPIRED}
+    public enum State {
+        ACTIVE,
+        CAPTURED,
+        RELEASED,
+        EXPIRED
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
@@ -43,9 +48,4 @@ public class WalletHold {
 
     @Column(name = "expires_at", nullable = false, columnDefinition = "timestamptz")
     private OffsetDateTime expiresAt;
-
-    @Column(name = "created_at",
-            columnDefinition = "timestamptz NOT NULL DEFAULT now()",
-            insertable = false, updatable = false)
-    private OffsetDateTime createdAt;
 }

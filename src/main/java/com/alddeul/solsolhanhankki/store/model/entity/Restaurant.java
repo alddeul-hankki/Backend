@@ -1,16 +1,18 @@
 package com.alddeul.solsolhanhankki.store.model.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "restaurant")
-public class Restaurant {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Restaurant extends BaseIdentityEntity {
 
     @Column(nullable = false, length = 80)
     private String name;

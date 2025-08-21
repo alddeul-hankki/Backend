@@ -1,5 +1,6 @@
 package com.alddeul.solsolhanhankki.store.model.entity;
 
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,10 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "menu_item",
         indexes = @Index(name = "idx_menu_restaurant", columnList = "restaurant_id"))
-public class MenuItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class MenuItem extends BaseIdentityEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "restaurant_id", nullable = false,

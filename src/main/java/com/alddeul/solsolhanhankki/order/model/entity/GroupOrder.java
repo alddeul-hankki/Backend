@@ -1,12 +1,12 @@
 package com.alddeul.solsolhanhankki.order.model.entity;
 
 import com.alddeul.solsolhanhankki.campus.model.entity.PickupZone;
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 import com.alddeul.solsolhanhankki.store.model.entity.Restaurant;
-import com.alddeul.solsolhanhankki.user.model.entity.SolUser;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
 import org.hibernate.annotations.Check;
 
 import java.time.OffsetDateTime;
@@ -24,11 +24,7 @@ import java.util.List;
                 @Index(name = "idx_group_order_pickup", columnList = "pickup_zone_id")
         })
 @Check(constraints = "min_amount >= 0")
-public class GroupOrder {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class GroupOrder extends BaseIdentityEntity {
 
     // 마감 시각(이 시각까지 최소금액 못 채우면 실패)
     @Column(name = "cutoff_at", nullable = false)
@@ -69,11 +65,6 @@ public class GroupOrder {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private Status status = Status.FORMING;
-
-    @Column(name = "created_at",
-            columnDefinition = "timestamptz NOT NULL DEFAULT now()",
-            insertable = false, updatable = false)
-    private OffsetDateTime createdAt;
 
     @Version
     @Column(nullable = false)

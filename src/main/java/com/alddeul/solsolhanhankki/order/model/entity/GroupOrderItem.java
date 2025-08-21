@@ -1,18 +1,23 @@
 package com.alddeul.solsolhanhankki.order.model.entity;
 
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseSeqEntity;
 import com.alddeul.solsolhanhankki.store.model.entity.MenuItem;
 import jakarta.persistence.*;
-
-import lombok.*;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.Check;
 
 
-// 그룹 주문에 참여한 사람의 음식 주문 엔티티 입니다
+/**
+ * 그룹 주문에서 특정 유저가 담은 메뉴 1줄을 표현합니다.
+ * 메뉴 1종류 = 라인 1개
+ * 예) 김밥×2, 라면×1  →  라인 2개로 저장.
+ */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(exclude = {"member","menuItem"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"member", "menuItem"})
 @Entity
 @Table(name = "group_order_item",
         indexes = {
@@ -20,12 +25,7 @@ import org.hibernate.annotations.Check;
                 @Index(name = "idx_group_order_item_menu", columnList = "menu_item_id")
         })
 @Check(constraints = "quantity > 0 AND unit_price >= 0 AND sum_price = quantity * unit_price")
-public class GroupOrderItem {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
-    private Long id;
+public class GroupOrderItem extends BaseSeqEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "group_order_member_id", nullable = false,

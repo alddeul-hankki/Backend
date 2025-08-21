@@ -1,5 +1,6 @@
 package com.alddeul.solsolhanhankki.wallet.model.entity;
 
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseSeqEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -7,10 +8,13 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Check;
 import org.hibernate.annotations.Immutable;
 
-import java.time.OffsetDateTime;
 
-
-// 지갑의 history를 관리하는 엔티티 입니다.
+/**
+ * 지갑의 모든 입출급 내역을 기록하는 엔티티 입니다.
+ * 불변 객체입니다.
+ * WalletLedgerType으로 가산 / 차감을 구분하기 때문에 amount > 0 입니다.
+ * 가산 타입의 amount면 +, 차감 타입의 amount면 - 되는 형식입니다.
+ */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -23,12 +27,8 @@ import java.time.OffsetDateTime;
         uniqueConstraints = @UniqueConstraint(name = "uk_ledger_idempotency", columnNames = "idempotency_key")
 )
 @Immutable
-@Check(constraints = "amount > 0")
-public class WalletLedger {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Check(constraints = "amount > 0 AND balance_after >= 0")
+public class WalletLedger extends BaseSeqEntity {
 
     // 어떤 지갑의 거래인지
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -63,15 +63,10 @@ public class WalletLedger {
     @Column(name = "amount", nullable = false)
     private long amount;
 
-    // 거래 후 지갑 잔액 스냅샷(원)
+    // 거래 후 지갑 잔액
     @Column(name = "balance_after", nullable = false)
     private long balanceAfter;
 
     @Column(name = "idempotency_key", nullable = false, length = 128, updatable = false)
     private String idempotencyKey;
-
-    @Column(name = "created_at",
-            columnDefinition = "timestamptz NOT NULL DEFAULT now()",
-            insertable = false, updatable = false)
-    private OffsetDateTime createdAt;
 }

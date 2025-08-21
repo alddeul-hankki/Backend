@@ -1,11 +1,14 @@
 package com.alddeul.solsolhanhankki.order.model.entity;
 
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 import com.alddeul.solsolhanhankki.user.model.entity.SolUser;
 import com.alddeul.solsolhanhankki.wallet.model.entity.WalletHold;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,13 +30,8 @@ import java.util.List;
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(exclude = {"groupOrder","user","hold","items"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class GroupOrderMember {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
-    private Long id;
+@ToString(exclude = {"groupOrder", "user", "hold", "items"})
+public class GroupOrderMember extends BaseIdentityEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "group_order_id", nullable = false,
@@ -56,18 +54,15 @@ public class GroupOrderMember {
     @Column(name = "held_amount", nullable = false)
     private long heldAmount;
 
-    public enum Status {JOINED, CANCELED, CAPTURED, REFUNDED}
+    public enum Status {
+        JOINED,
+        PROCESSING,
+        CANCELED,
+        CAPTURED,
+        REFUNDED
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 16)
     private Status status = Status.JOINED;
-
-    @Version
-    @Column(nullable = false)
-    private long version;
-
-    @Column(name = "created_at",
-            columnDefinition = "timestamptz NOT NULL DEFAULT now()",
-            insertable = false, updatable = false)
-    private OffsetDateTime createdAt;
 }

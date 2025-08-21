@@ -1,9 +1,10 @@
 package com.alddeul.solsolhanhankki.campus.model.entity;
 
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -13,11 +14,7 @@ import lombok.AccessLevel;
         indexes = {
                 @Index(name = "idx_pickup_campus", columnList = "campus_code")
         })
-public class PickupZone {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class PickupZone extends BaseIdentityEntity {
 
     // 캠퍼스 식별 코드
     @Column(name = "campus_code", nullable = false, length = 32)

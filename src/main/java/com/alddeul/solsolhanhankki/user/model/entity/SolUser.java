@@ -1,6 +1,9 @@
 package com.alddeul.solsolhanhankki.user.model.entity;
 
-import jakarta.persistence.*;
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,10 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "sol_user")
-public class SolUser {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class SolUser extends BaseIdentityEntity {
 
     @Column(name = "student_id")
     private Long studentId;

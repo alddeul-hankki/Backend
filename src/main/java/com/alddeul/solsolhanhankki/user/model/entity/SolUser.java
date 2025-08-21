@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class SolUser extends BaseIdentityEntity {
 
     @Column(name = "student_id")
-    private Long studentId;
+    private String studentId;
 
     @Column(nullable = false, length = 100)
     private String name;

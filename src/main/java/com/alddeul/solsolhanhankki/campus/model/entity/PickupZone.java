@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "pickup_zone",
-        uniqueConstraints = @UniqueConstraint(name = "uk_pickup_zone_name", columnNames = {"campus_code", "label"}),
+        uniqueConstraints = @UniqueConstraint(name = "uk_pickup_zone_name", columnNames = {"campus_code"}),
         indexes = {
                 @Index(name = "idx_pickup_campus", columnList = "campus_code")
         })
@@ -26,8 +26,8 @@ public class PickupZone extends BaseIdentityEntity {
 
     // 지도 마커 표시용 좌표
     @Column(name = "lat", nullable = false)
-    private double lat;
+    private Double lat;
 
     @Column(name = "lng", nullable = false)
-    private double lng;
+    private Double lng;
 }

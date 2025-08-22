@@ -4,6 +4,7 @@
 /build/
 /.gradle
 !gradle/wrapper/gradle-wrapper.jar
+.metadata/
 
 # =========================
 # Java

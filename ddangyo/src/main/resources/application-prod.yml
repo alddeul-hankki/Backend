@@ -1,0 +1,4 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@ddangyo.7gdfyx4.mongodb.net/solsolhanhankki?retryWrites=true&w=majority&appName=ddangyo

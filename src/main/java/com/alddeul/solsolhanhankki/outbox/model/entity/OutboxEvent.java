@@ -3,6 +3,7 @@ package com.alddeul.solsolhanhankki.outbox.model.entity;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseTimeEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -21,8 +22,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OutboxEvent extends BaseTimeEntity {  // BaseIdentityEntity 대신 BaseTimeEntity 상속 또는 AbstractBaseEntity 상속
-
+public class OutboxEvent extends BaseIdentityEntity {  
     @Column(nullable = false, length = 100)
     private String aggregateType;
 

@@ -9,9 +9,11 @@ import com.alddeul.solsolhanhankki.outbox.repository.OutboxEventRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OutboxProcessor {
 
     private final OutboxEventRepository outboxEventRepository;
@@ -36,6 +38,6 @@ public class OutboxProcessor {
     }
 
     private void sendEvent(OutboxEvent event) {
-        System.out.println("발행: " + event.getEventType() + " / payload=" + event.getPayload());
+       log.info("발행: {} payload : {}", event.getEventType(), event.getPayload());
     }
 }

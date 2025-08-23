@@ -1,0 +1,13 @@
+spring:
+  profiles:
+    active: dev
+
+  web:
+    client:
+      connect-timeout: 5000
+      read-timeout: 5000
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO

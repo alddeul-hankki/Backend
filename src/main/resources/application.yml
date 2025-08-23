@@ -17,3 +17,11 @@ logging:
   level:
     root: INFO
     org.springframework.web: INFO
+
+financial:
+  api:
+    base-url: ${FINANCIAL_BASE_URL}
+    key: ${FINANCIAL_API_KEY}
+    name: 쏠쏠한한끼
+    default:
+      account-type: ${FINANCIAL_DEFAULT_ACCOUNT_TYPE}

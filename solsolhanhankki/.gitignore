@@ -49,6 +49,10 @@ replay_pid*
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+.gradle/
+.metadata/
+.settings/
+
 
 ## NetBeans
 /nbproject/private/

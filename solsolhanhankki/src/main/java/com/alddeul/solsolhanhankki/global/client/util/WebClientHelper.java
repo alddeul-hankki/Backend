@@ -1,5 +1,7 @@
 package com.alddeul.solsolhanhankki.global.client.util;
 
+import com.alddeul.solsolhanhankki.global.client.dto.ApiResponse;
+import com.alddeul.solsolhanhankki.global.client.dto.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,15 +16,23 @@ import reactor.core.publisher.Mono;
 public class WebClientHelper {
     private final WebClient webClient;
 
-    public <T> T postRequest(String uri, Object body, Class<T> responseType) {
+    public <T> ApiResponse<T> postRequest(String uri, Object body, Class<T> responseType) {
         try {
             return webClient.post()
                     .uri(uri)
                     .bodyValue(body)
-                    .retrieve()
-                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                            this::handleErrorResponse)
-                    .bodyToMono(responseType)
+                    .exchangeToMono(clientResponse -> {
+                        if (clientResponse.statusCode().is2xxSuccessful()) {
+                            return clientResponse.bodyToMono(responseType)
+                                    .map(ApiResponse::ofData);
+                        } else if (clientResponse.statusCode().is4xxClientError()) {
+                            return clientResponse.bodyToMono(ErrorResponse.class)
+                                    .map(ApiResponse::<T>ofError);
+                        } else { // 5XX 등 서버 오류는 예외로 처리
+                            return clientResponse.createException()
+                                    .flatMap(Mono::error);
+                        }
+                    })
                     .block();
         } catch (WebClientResponseException e) {
             log.error("HTTP 상태 코드: {}, 응답 본문: {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
@@ -30,13 +40,5 @@ public class WebClientHelper {
         } catch (Exception e) {
             throw new RuntimeException("API 호출 실패", e);
         }
-    }
-
-    private Mono<Throwable> handleErrorResponse(ClientResponse clientResponse) {
-        return clientResponse.bodyToMono(String.class)
-                .flatMap(errorBody -> {
-                    log.error("API 오류 응답: {}", errorBody);
-                    return Mono.error(new RuntimeException("API 호출 실패: " + errorBody));
-                });
     }
 }

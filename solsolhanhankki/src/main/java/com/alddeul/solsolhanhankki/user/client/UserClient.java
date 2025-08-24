@@ -1,8 +1,9 @@
 package com.alddeul.solsolhanhankki.user.client;
 
+import com.alddeul.solsolhanhankki.global.client.dto.ApiResponse;
 import com.alddeul.solsolhanhankki.global.client.util.WebClientHelper;
-import com.alddeul.solsolhanhankki.user.client.dto.UserRequest;
-import com.alddeul.solsolhanhankki.user.client.dto.UserResponse;
+import com.alddeul.solsolhanhankki.user.client.dto.UserApiRequest;
+import com.alddeul.solsolhanhankki.user.client.dto.UserApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,13 +19,13 @@ public class UserClient {
     @Value("${financial.api.key}")
     private String appKey;
 
-    public UserResponse loginUser(String email) {
-        UserRequest request = UserRequest.of(appKey, email);
-        return webClientHelper.postRequest(url + "/api/v1/member", request, UserResponse.class);
+    public ApiResponse<UserApiResponse> loginUser(String email) {
+        UserApiRequest request = UserApiRequest.of(appKey, email);
+        return webClientHelper.postRequest(url + "/api/v1/member", request, UserApiResponse.class);
     }
 
-    public UserResponse searchUser(String email) {
-        UserRequest request = UserRequest.of(appKey, email);
-        return webClientHelper.postRequest(url + "/api/v1/member/search", request, UserResponse.class);
+    public ApiResponse<UserApiResponse> searchUser(String email) {
+        UserApiRequest request = UserApiRequest.of(appKey, email);
+        return webClientHelper.postRequest(url + "/api/v1/member/search", request, UserApiResponse.class);
     }
 }

@@ -22,4 +22,17 @@ public class SolUser extends BaseIdentityEntity {
 
     @Column(length = 50)
     private String major;
+
+    @Column(nullable = false)
+    private String email;
+
+    private String accessKey;
+
+
+    public void registerUserAtBank(String accessKey) {
+        if (accessKey != null) {
+            throw new IllegalStateException("이미 은행에 등록된 사용자입니다.");
+        }
+        this.accessKey = accessKey;
+    }
 }

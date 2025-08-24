@@ -7,7 +7,7 @@ import java.time.OffsetDateTime;
 
 @Getter
 @NoArgsConstructor
-public class UserResponse {
+public class UserApiResponse {
     private String userId;
     private String userName;
     private String institutionCode;

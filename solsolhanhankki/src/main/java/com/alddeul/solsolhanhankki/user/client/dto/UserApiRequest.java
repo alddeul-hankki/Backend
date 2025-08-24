@@ -7,12 +7,12 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class UserRequest {
+public class UserApiRequest {
     private String apiKey;
     private String userId;
 
-    public static UserRequest of(String apiKey, String userId) {
-        return UserRequest.builder()
+    public static UserApiRequest of(String apiKey, String userId) {
+        return UserApiRequest.builder()
                 .apiKey(apiKey)
                 .userId(userId)
                 .build();

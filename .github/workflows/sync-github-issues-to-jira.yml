@@ -1,4 +1,4 @@
-name: Sync GitHub issues -> Jira
+name: Sync GitHub issues -> Jira (AH)
 
 on:
   issues:
@@ -50,17 +50,18 @@ jobs:
             curl -sS -H "Authorization: Bearer $GH_TOKEN" \
               "$GH_API/repos/$GH_REPO/issues/$GH_NUM/comments?per_page=100" \
             | jq -r '.[].body // ""' \
-            | sed -nE 's/.*Synced to Jira:[[:space:]]*([A-Z][A-Z0-9]+-[0-9]+).*/\1/p' \
+            | grep -Eo '^Synced to Jira:[[:space:]]*[A-Z0-9]+-[0-9]+' || true \
+            | sed -E 's/^Synced to Jira:[[:space:]]*//' \
             | head -n1
           )
-          key="$(printf '%s' "${key:-}" | tr -d '\r' | xargs)"
           echo "key=$key" >> "$GITHUB_OUTPUT"
           echo "Found Jira key: ${key:-<none>}"
 
       - name: Create Jira issue (if not yet linked)
         if: >
           steps.key.outputs.key == '' &&
-          (github.event.action == 'labeled' && github.event.label && github.event.label.name == 'jira')
+          ( github.event.action == 'opened' ||
+            (github.event.action == 'labeled' && github.event.label && github.event.label.name == 'jira') )
         shell: bash
         env:
           JIRA_BASE:    ${{ steps.prep.outputs.base }}
@@ -132,20 +133,31 @@ jobs:
           JIRA_BASE:   ${{ steps.prep.outputs.base }}
           JIRA_EMAIL:  ${{ secrets.JIRA_USER_EMAIL }}
           JIRA_TOKEN:  ${{ secrets.JIRA_API_TOKEN }}
-          KEY:         ${{ steps.key.outputs.key }}
+          KEY_RAW:     ${{ steps.key.outputs.key }}
           DONE_NAME:   ${{ vars.JIRA_DONE_NAME }}
         run: |
           set -euo pipefail
-          name="${DONE_NAME:-Done}"
-          trans=$(curl -sS -u "$JIRA_EMAIL:$JIRA_TOKEN" "$JIRA_BASE/rest/api/3/issue/$KEY/transitions")
-          echo "Available transitions:"; echo "$trans" | jq -r '.transitions[].name'
-          id=$(echo "$trans" | jq -r --arg n "$name" '.transitions[] | select(.name==$n) | .id')
-          if [ -z "$id" ]; then
-            echo "No transition named '$name'"; exit 0
+          
+          if [[ "$KEY_RAW" =~ ([A-Z][A-Z0-9_]+-[0-9]+) ]]; then
+            KEY="${BASH_REMATCH[1]}"
+          else
+            echo "Invalid KEY: '$KEY_RAW'"; exit 1
           fi
-          curl --fail-with-body -sS -u "$JIRA_EMAIL:$JIRA_TOKEN" -H "Content-Type: application/json" \
-            -X POST "$JIRA_BASE/rest/api/3/issue/$KEY/transitions" \
-            --data "$(jq -n --arg id "$id" '{transition:{id:$id}}')"
+          ENC_KEY=$(printf '%s' "$KEY" | jq -sRr @uri)
+          
+          TRANS=$(curl -sS -u "$JIRA_EMAIL:$JIRA_TOKEN" \
+            "$JIRA_BASE/rest/api/3/issue/$ENC_KEY/transitions")
+
+          ID=$(printf '%s' "$TRANS" | jq -r '
+            .transitions[]
+            | select((.name|ascii_downcase)=="done" or .name=="완료")
+            | .id' | head -n1)
+          curl -sS --fail-with-body -u "$JIRA_EMAIL:$JIRA_TOKEN" \
+            -H "Content-Type: application/json" \
+            -X POST "$JIRA_BASE/rest/api/3/issue/$ENC_KEY/transitions" \
+            --data "$(jq -n --arg id "$ID" '{transition:{id:$id}}')"
+          
+          echo "Transitioned $KEY -> Done/완료"
 
       - name: Reopen in Jira on GH issue reopen (to In Progress / To Do)
         if: github.event.action == 'reopened' && steps.key.outputs.key != ''

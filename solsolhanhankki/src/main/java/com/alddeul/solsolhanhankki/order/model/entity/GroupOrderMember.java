@@ -2,7 +2,7 @@ package com.alddeul.solsolhanhankki.order.model.entity;
 
 import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 import com.alddeul.solsolhanhankki.user.model.entity.SolUser;
-import com.alddeul.solsolhanhankki.wallet.model.entity.WalletHold;
+import com.alddeul.solsolhanhankki.paymoney.model.entity.WalletHold;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

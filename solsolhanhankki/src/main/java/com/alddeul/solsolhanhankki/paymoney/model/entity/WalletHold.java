@@ -1,4 +1,4 @@
-package com.alddeul.solsolhanhankki.wallet.model.entity;
+package com.alddeul.solsolhanhankki.paymoney.model.entity;
 
 import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 import jakarta.persistence.*;

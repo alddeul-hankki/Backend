@@ -1,17 +1,13 @@
 package com.alddeul.solsolhanhankki.user.client.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
 
-@Getter
-@NoArgsConstructor
-public class UserApiResponse {
-    private String userId;
-    private String userName;
-    private String institutionCode;
-    private String userKey;
-    private OffsetDateTime  created;
-    private OffsetDateTime modified;
-}
+public record UserApiResponse (
+    String userId,
+    String userName,
+    String institutionCode,
+    String userKey,
+    OffsetDateTime created,
+    OffsetDateTime modified
+){}

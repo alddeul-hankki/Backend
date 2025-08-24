@@ -4,6 +4,7 @@ import com.alddeul.solsolhanhankki.account.auth.client.dto.CheckAuthCodeRequest;
 import com.alddeul.solsolhanhankki.account.auth.client.dto.CheckAuthCodeResponse;
 import com.alddeul.solsolhanhankki.account.auth.client.dto.OneCentTransferRequest;
 import com.alddeul.solsolhanhankki.account.auth.client.dto.OneCentTransferResponse;
+import com.alddeul.solsolhanhankki.global.client.dto.ApiResponse;
 import com.alddeul.solsolhanhankki.global.client.dto.RequestHeader;
 import com.alddeul.solsolhanhankki.global.client.util.WebClientHelper;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +25,14 @@ public class AccountAuthClient {
     @Value("${financial.api.name}")
     private String appName;
 
-    public OneCentTransferResponse openAccountAuth(String userKey, String accountNo) {
+    public ApiResponse<OneCentTransferResponse> openAccountAuth(String userKey, String accountNo) {
         String apiName = "openAccountAuth";
         RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
         OneCentTransferRequest request = OneCentTransferRequest.of(header, accountNo, appName);
         return webClientHelper.postRequest(url + "/api/v1/edu/accountAuth/openAccountAuth", request, OneCentTransferResponse.class);
     }
 
-    public CheckAuthCodeResponse checkAuthCode(String userKey, String accountNo, String authCode) {
+    public ApiResponse<CheckAuthCodeResponse> checkAuthCode(String userKey, String accountNo, String authCode) {
         String apiName = "checkAuthCode";
         RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
         CheckAuthCodeRequest request = CheckAuthCodeRequest.of(header, accountNo, appName, authCode);

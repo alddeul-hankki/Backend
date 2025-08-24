@@ -1,5 +1,6 @@
 package com.alddeul.solsolhanhankki.user.client;
 
+import com.alddeul.solsolhanhankki.global.client.dto.ApiResponse;
 import com.alddeul.solsolhanhankki.global.client.util.WebClientHelper;
 import com.alddeul.solsolhanhankki.user.client.dto.UserApiRequest;
 import com.alddeul.solsolhanhankki.user.client.dto.UserApiResponse;
@@ -18,12 +19,12 @@ public class UserClient {
     @Value("${financial.api.key}")
     private String appKey;
 
-    public UserApiResponse loginUser(String email) {
+    public ApiResponse<UserApiResponse> loginUser(String email) {
         UserApiRequest request = UserApiRequest.of(appKey, email);
         return webClientHelper.postRequest(url + "/api/v1/member", request, UserApiResponse.class);
     }
 
-    public UserApiResponse searchUser(String email) {
+    public ApiResponse<UserApiResponse> searchUser(String email) {
         UserApiRequest request = UserApiRequest.of(appKey, email);
         return webClientHelper.postRequest(url + "/api/v1/member/search", request, UserApiResponse.class);
     }

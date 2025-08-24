@@ -44,4 +44,18 @@ public class AccountClient {
         InquireAccountHistoryRequest request = InquireAccountHistoryRequest.of(header, accountNo, transactionNo);
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireTransactionHistory", request, InquireAccountHistoryResponse.class);
     }
+
+    public ApiResponse<WithdrawalAccountResponse> withdrawDemandDepositAccount(String userKey, String accountNo, Long transactionBalance, String transactionSummary) {
+        String apiName = "withdrawDemandDepositAccount";
+        RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
+        WithdrawalAccountRequest request = WithdrawalAccountRequest.of(header, accountNo, transactionBalance, transactionSummary);
+        return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/updateDemandDepositAccountWithdrawal", request, WithdrawalAccountResponse.class);
+    }
+
+    public ApiResponse<DepositAccountResponse> depositDemandDepositAccount(String userKey, String accountNo, Long transactionBalance, String transactionSummary) {
+        String apiName = "depositDemandDepositAccount";
+        RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
+        DepositAccountRequest request = DepositAccountRequest.of(header, accountNo, transactionBalance, transactionSummary);
+        return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/updateDemandDepositAccountDeposit", request, DepositAccountResponse.class);
+    }
 }

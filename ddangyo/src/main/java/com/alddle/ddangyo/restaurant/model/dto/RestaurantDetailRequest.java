@@ -9,7 +9,8 @@ public record RestaurantDetailRequest(
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record DmaShopSearch(
+
+            // 현재 가능한 patstoNo는 1102602, 1121669, 1139069, 1163656 입니다.
             @JsonProperty("patsto_no") String patstoNo
-    ) {
-    }
+    ) {}
 }

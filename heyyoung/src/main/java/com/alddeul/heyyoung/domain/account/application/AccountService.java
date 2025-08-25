@@ -3,18 +3,22 @@ package com.alddeul.heyyoung.domain.account.application;
 import com.alddeul.heyyoung.common.api.external.dto.FinanceApiResponse;
 import com.alddeul.heyyoung.domain.account.external.deposit.FinanceAccountClient;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.CreateAccountResponse;
+import com.alddeul.heyyoung.domain.account.external.deposit.dto.InquireAccountHistoryListResponse;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.InquireAccountListResponse;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.InquireAccountResponse;
 import com.alddeul.heyyoung.domain.account.model.entity.Account;
 import com.alddeul.heyyoung.domain.account.model.repository.AccountRepository;
 import com.alddeul.heyyoung.domain.account.presentation.response.AccountResponse;
 import com.alddeul.heyyoung.domain.account.presentation.response.AccountSummaryResponse;
+import com.alddeul.heyyoung.domain.account.presentation.response.TransactionHistoryResponse;
 import com.alddeul.heyyoung.domain.user.application.UserFacade;
 import com.alddeul.heyyoung.domain.user.model.entity.SolUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -96,5 +100,26 @@ public class AccountService {
         // 4. DB 저장
         accountRepository.save(account);
         return AccountResponse.from(account);
+    }
+
+
+    public List<TransactionHistoryResponse> getTransactionHistory(String email, Long accountId, Integer range) {
+        String userKey = userFacade.getUserKey(email);
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 계좌입니다."));
+
+        String startDate = LocalDate.now().minusDays(range).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String endDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        FinanceApiResponse<InquireAccountHistoryListResponse> response
+                = accountClient.inquireTransactionHistoryList(userKey, account.getAccountNumber(), startDate, endDate, "A");
+
+        if (!response.success()) {
+            throw new RuntimeException("거래내역 조회에 실패하였습니다.");
+        }
+
+        return response.data().getRec().getList().stream()
+                .map(TransactionHistoryResponse::from)
+                .toList();
     }
 }

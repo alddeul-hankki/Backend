@@ -75,3 +75,4 @@ HELP.md
 # =========================
 .env
 src/main/resources/application-dev.yml
+src/main/resources/fire-servcie-account.json

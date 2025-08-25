@@ -1,9 +1,6 @@
 package com.alddle.ddangyo.restaurant.controller;
 
-import com.alddle.ddangyo.restaurant.model.dto.RestaurantDetailResponse;
-import com.alddle.ddangyo.restaurant.model.dto.RestaurantListRequest;
-import com.alddle.ddangyo.restaurant.model.dto.RestaurantSummaryResponse;
-import com.alddle.ddangyo.restaurant.model.dto.RestaurantDetailRequest;
+import com.alddle.ddangyo.restaurant.model.dto.*;
 import com.alddle.ddangyo.restaurant.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +25,23 @@ public class RestaurantController {
     public ResponseEntity<RestaurantDetailResponse> getRestaurantDetail(@RequestBody RestaurantDetailRequest requestDto) {
         String storeId = requestDto.dmaShopSearch().patstoNo();
         return restaurantService.findRestaurantDetail(storeId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/restaurants/homemenu")
+    public ResponseEntity<HomeMenuResponse> getHomeMenu(@RequestBody HomeMenuRequest requestDto){
+        String storeId = requestDto.dmaShopSearch().patstoNo();
+        return restaurantService.findHomeMenu(storeId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/restaurants/menu")
+    public ResponseEntity<MenuDetailResponse> getMenuDetail(@RequestBody MenuDetailRequest requestDto) {
+        String storeId = requestDto.dmaMenuInfo().patstoNo();
+        String menuId = requestDto.dmaMenuInfo().menuId();
+        return restaurantService.findMenuDetail(storeId, menuId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

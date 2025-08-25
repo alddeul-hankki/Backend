@@ -1,14 +1,20 @@
 package com.alddle.ddangyo.restaurant.service;
 
+import com.alddle.ddangyo.restaurant.model.dto.HomeMenuResponse;
+import com.alddle.ddangyo.restaurant.model.dto.MenuDetailResponse;
 import com.alddle.ddangyo.restaurant.model.dto.RestaurantDetailResponse;
 import com.alddle.ddangyo.restaurant.model.dto.RestaurantSummaryResponse;
 import com.alddle.ddangyo.restaurant.model.entity.Menu;
 import com.alddle.ddangyo.restaurant.model.entity.Restaurant;
+import com.alddle.ddangyo.restaurant.model.repository.HomeMenuRepository;
+import com.alddle.ddangyo.restaurant.model.repository.MenuDetailRepository;
 import com.alddle.ddangyo.restaurant.model.repository.MenuRepository;
 import com.alddle.ddangyo.restaurant.model.repository.RestaurantRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,6 +25,9 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final MenuRepository menuRepository;
+    private final HomeMenuRepository homeMenuRepository;
+    private final MenuDetailRepository menuDetailRepository;
+    private final ObjectMapper objectMapper;
 
     public List<RestaurantSummaryResponse> findRestaurants(String categoryCd, String sortCd) {
         Sort sort = switch (sortCd) {
@@ -49,4 +58,17 @@ public class RestaurantService {
                 });
 
     }
+
+    // 홈 메뉴 조회 (DB에서 조회)
+    public Optional<HomeMenuResponse> findHomeMenu(String storeId) {
+        return homeMenuRepository.findByPatstoNo(storeId)
+                .map(homeMenu -> objectMapper.convertValue(homeMenu, HomeMenuResponse.class));
+    }
+
+    // 메뉴 상세 조회 (DB에서 조회)
+    public Optional<MenuDetailResponse> findMenuDetail(String storeId, String menuId) {
+        return menuDetailRepository.findByPatstoNoAndMenuId(storeId, menuId)
+                .map(menuDetail -> objectMapper.convertValue(menuDetail, MenuDetailResponse.class));
+    }
+
 }

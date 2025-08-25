@@ -3,7 +3,6 @@ package com.alddeul.heyyoung.domain.account.external.deposit;
 import com.alddeul.heyyoung.common.api.external.dto.FinanceApiResponse;
 import com.alddeul.heyyoung.common.api.external.dto.RequestHeader;
 import com.alddeul.heyyoung.common.api.external.utils.WebClientHelper;
-import com.alddeul.heyyoung.common.api.response.ApiResponse;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,10 +37,17 @@ public class FinanceAccountClient {
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireDemandDepositAccountList", request, InquireAccountListResponse.class);
     }
 
-    public FinanceApiResponse<InquireAccountHistoryResponse> inquireTransactionHistory(String userKey, String accountNo, Long transactionNo) {
-        String apiName = "inquireTransactionHistory";
+    public FinanceApiResponse<InquireAccountResponse> inquireDemandDepositAccount(String userKey, String accountNo) {
+        String apiName = "inquireDemandDepositAccount";
         RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
-        InquireAccountHistoryRequest request = InquireAccountHistoryRequest.of(header, accountNo, transactionNo);
-        return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireTransactionHistory", request, InquireAccountHistoryResponse.class);
+        InquireAccountRequest request = InquireAccountRequest.of(header, accountNo);
+        return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireDemandDepositAccount", request, InquireAccountResponse.class);
+    }
+
+    public FinanceApiResponse<InquireAccountHistoryListResponse> inquireTransactionHistoryList(String userKey, String accountNo, Long transactionNo) {
+        String apiName = "inquireTransactionHistoryList";
+        RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
+        InquireAccountHistoryListRequest request = InquireAccountHistoryListRequest.of(header, accountNo, transactionNo);
+        return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireTransactionHistoryList", request, InquireAccountHistoryListResponse.class);
     }
 }

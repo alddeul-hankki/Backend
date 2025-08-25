@@ -44,10 +44,10 @@ public class FinanceAccountClient {
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireDemandDepositAccount", request, InquireAccountResponse.class);
     }
 
-    public FinanceApiResponse<InquireAccountHistoryListResponse> inquireTransactionHistoryList(String userKey, String accountNo, Long transactionNo) {
+    public FinanceApiResponse<InquireAccountHistoryListResponse> inquireTransactionHistoryList(String userKey, String accountNo, String startDate, String endDate, String transactionType) {
         String apiName = "inquireTransactionHistoryList";
         RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
-        InquireAccountHistoryListRequest request = InquireAccountHistoryListRequest.of(header, accountNo, transactionNo);
+        InquireAccountHistoryListRequest request = InquireAccountHistoryListRequest.of(header, accountNo, startDate, endDate, transactionType);
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireTransactionHistoryList", request, InquireAccountHistoryListResponse.class);
     }
 }

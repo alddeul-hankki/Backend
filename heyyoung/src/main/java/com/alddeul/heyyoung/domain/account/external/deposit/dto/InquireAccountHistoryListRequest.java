@@ -18,14 +18,14 @@ public class InquireAccountHistoryListRequest {
     private String transactionType;
     private String orderByType;
 
-    public static InquireAccountHistoryListRequest of(RequestHeader header, String accountNo, String startDate, String endDate, String transactionType, String orderByType) {
+    public static InquireAccountHistoryListRequest of(RequestHeader header, String accountNo, String startDate, String endDate, String transactionType) {
         return InquireAccountHistoryListRequest.builder()
                 .header(header)
                 .accountNo(accountNo)
                 .startDate(startDate)
                 .endDate(endDate)
                 .transactionType(transactionType)
-                .orderByType(orderByType)
+                .orderByType("DESC")
                 .build();
     }
 }

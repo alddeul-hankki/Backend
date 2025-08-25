@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 public class InquireAccountHistoryListResponse {
@@ -17,11 +19,11 @@ public class InquireAccountHistoryListResponse {
     @NoArgsConstructor
     public static class Rec {
         private String totalCount;
-        private Detail list;
+        private List<Detail> list;
 
         @Getter
         @NoArgsConstructor
-        private static class Detail {
+        public static class Detail {
             private Long transactionUniqueNo;
             private String transactionDate;
             private String transactionTime;

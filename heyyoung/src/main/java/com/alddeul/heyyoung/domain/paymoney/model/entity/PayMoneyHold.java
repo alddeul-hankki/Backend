@@ -13,19 +13,19 @@ import java.time.OffsetDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "wallet_hold",
+@Table(name = "paymoney_hold",
         indexes = {
-                @Index(name = "idx_hold_wallet_state", columnList = "wallet_id, state"),
+                @Index(name = "idx_hold_paymoney_state", columnList = "paymoney_id, state"),
                 @Index(name = "idx_hold_expires", columnList = "expires_at")
         },
         uniqueConstraints = @UniqueConstraint(name = "uk_hold_intent", columnNames = "intent_id"))
 @Check(constraints = "amount >= 0")
-public class WalletHold extends BaseIdentityEntity {
+public class PayMoneyHold extends BaseIdentityEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "wallet_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_hold_wallet"))
-    private PayMoneyWallet wallet;
+    @JoinColumn(name = "paymoney_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_hold_paymoney"))
+    private PayMoney paymoney;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "intent_id", nullable = false,

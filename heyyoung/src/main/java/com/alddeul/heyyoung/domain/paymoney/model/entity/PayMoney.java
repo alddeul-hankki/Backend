@@ -12,14 +12,14 @@ import org.hibernate.annotations.Check;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "pay_money_wallet",
-        uniqueConstraints = @UniqueConstraint(name = "uk_wallet_user", columnNames = "user_id"))
+@Table(name = "pay_money_paymoney",
+        uniqueConstraints = @UniqueConstraint(name = "uk_paymoney_user", columnNames = "user_id"))
 @Check(constraints = "amount >= 0")
-public class PayMoneyWallet extends BaseIdentityEntity {
+public class PayMoney extends BaseIdentityEntity {
 
     @OneToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_wallet_user"))
+            foreignKey = @ForeignKey(name = "fk_paymoney_user"))
     private SolUser user;
 
     @Column(name = "amount", nullable = false)

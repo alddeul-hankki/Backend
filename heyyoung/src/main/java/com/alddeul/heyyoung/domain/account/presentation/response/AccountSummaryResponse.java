@@ -5,7 +5,9 @@ import com.alddeul.heyyoung.domain.account.model.entity.Account;
 public record AccountSummaryResponse(
         String bankName,
         String maskedAccountNumber,
-        Long accountId
+        Long accountId,
+        String status,
+        Boolean isPrimary
 ) {
     public static AccountSummaryResponse from(Account account) {
         String maskedAccountNumber;
@@ -18,7 +20,9 @@ public record AccountSummaryResponse(
         return new AccountSummaryResponse(
                 account.getBankName(),
                 maskedAccountNumber,
-                account.getId()
+                account.getId(),
+                account.getVerifyStatus().name(),
+                account.getPrimaryAccount()
         );
     }
 }

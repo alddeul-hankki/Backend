@@ -28,7 +28,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'      // MVC 서버
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // JPA
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'  // WebClient
-
+	
+	// Firebase
+	implementation 'com.google.firebase:firebase-admin:9.2.0'
+	implementation 'org.springframework.boot:spring-boot-starter-validation' // Validation
+	
 	// 개발 편의
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

@@ -8,12 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface RestaurantInfoRepository extends MongoRepository<RestaurantInfo, String> { // ID 타입이 String이라고 가정
+public interface RestaurantInfoRepository extends MongoRepository<RestaurantInfo, String> {
 
-    /**
-     * 가맹점 번호(patstoNo)로 가게 상세 정보 조회
-     * @param patstoNo 가맹점 번호
-     * @return Optional<RestaurantInfo>
-     */
     Optional<RestaurantInfo> findByPatstoNo(String patstoNo);
 }

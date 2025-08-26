@@ -12,45 +12,40 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@Document(collection = "restaurant_info") // MongoDB 컬렉션 이름 지정
+@Document(collection = "restaurant_info")
 public class RestaurantInfo {
 
     @Id
-    private String id; // MongoDB Document ID
+    private String id;
 
-    // --- 핵심 정보 ---
     @Field("patsto_no")
-    private String patstoNo; // 가게 고유 번호
+    private String patstoNo;
 
     @Field("patsto_nm")
-    private String patstoNm; // 가게 이름
+    private String patstoNm;
 
     @Field("biz_stat_msg_cont")
-    private String bizStatMsgCont; // 영업 상태 메시지 (ex: "영업중")
+    private String bizStatMsgCont;
 
     @Field("rpsnt_cat_nm")
-    private String rpsntCatNm; // 대표 카테고리 (ex: "치킨")
+    private String rpsntCatNm;
 
     @Field("good_cnt")
-    private int goodCnt; // 좋아요 수
+    private int goodCnt;
 
     @Field("wish_cnt")
-    private int wishCnt; // 찜 수
+    private int wishCnt;
 
-    // --- 배달 정보 ---
     @Field("delv_tm")
-    private String delvTm; // 예상 배달 시간 (ex: "19~36분 예상")
+    private String delvTm;
 
     @Field("delv_fee")
-    private String delvFee; // 배달비 (ex: "3,000원")
+    private String delvFee;
 
     @Field("deli_min_ord_amt")
-    private String deliMinOrdAmt; // 최소 주문 금액
+    private String deliMinOrdAmt;
 
-    // --- 가게 이미지 ---
     @Field("shop_image_urls")
-    private List<String> shopImageUrls; // 가게 대표 이미지 URL 목록
+    private List<String> shopImageUrls;
 
-    // 참고: JSON의 dma_shop_home_info와 dma_shop_home_vd_od_info 객체 내의
-    //      수많은 필드 중, 실제 화면 표시에 필요한 데이터만 선별하여 정의했습니다.
 }

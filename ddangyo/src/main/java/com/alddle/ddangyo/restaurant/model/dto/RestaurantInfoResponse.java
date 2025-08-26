@@ -12,9 +12,6 @@ public record RestaurantInfoResponse(
         @JsonProperty("message_code") String messageCode,
         String message
 ) {
-    /**
-     * RestaurantInfo 엔티티를 파라미터로 받는 생성자
-     */
     public RestaurantInfoResponse(RestaurantInfo entity) {
         this(
                 new Result(entity),
@@ -24,7 +21,6 @@ public record RestaurantInfoResponse(
         );
     }
 
-    // Result 레코드: dma_shop_home_info와 shop_img_list만 포함하도록 단순화
     public record Result(
             @JsonProperty("dma_shop_home_info") DmaShopHomeInfo dmaShopHomeInfo,
             @JsonProperty("shop_img_list") List<ShopImg> shopImgList
@@ -40,7 +36,6 @@ public record RestaurantInfoResponse(
         }
     }
 
-    // DmaShopHomeInfo 레코드: Entity와 동일한 필드만 갖도록 단순화
     public record DmaShopHomeInfo(
             @JsonProperty("patsto_no") String patstoNo,
             @JsonProperty("patsto_nm") String patstoNm,
@@ -67,7 +62,6 @@ public record RestaurantInfoResponse(
         }
     }
 
-    // ShopImg 레코드 (변경 없음)
     public record ShopImg(
             @JsonProperty("rpsnt_img_file_nm") String rpsntImgFileNm
     ) {

@@ -13,7 +13,7 @@ import java.util.List;
 
 @Document(collection = "menus")
 @Getter
-@NoArgsConstructor // 1. 기본 생성자 추가
+@NoArgsConstructor
 @AllArgsConstructor
 public class Menu {
 
@@ -23,61 +23,60 @@ public class Menu {
     @Field("patsto_no")
     private String patstoNo;
 
-    @JsonProperty("menu_grp_list") // 3. JSON 필드명 매핑
+    @JsonProperty("menu_grp_list")
     private List<MenuGroup> menuGroups;
 
-    @JsonProperty("menu_list") // 3. JSON 필드명 매핑
+    @JsonProperty("menu_list")
     private List<MenuItem> menuList;
 
     @Getter
-    @NoArgsConstructor // 1. 기본 생성자 추가
+    @NoArgsConstructor
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MenuGroup {
-        @JsonProperty("menu_grp_id") // 2. JSON 필드명 매핑
+        @JsonProperty("menu_grp_id")
         private String menuGrpId;
 
-        @JsonProperty("menu_grp_nm") // 2. JSON 필드명 매핑
+        @JsonProperty("menu_grp_nm")
         private String name;
 
-        @JsonProperty("menu_grp_expl") // 2. JSON 필드명 매핑
+        @JsonProperty("menu_grp_expl")
         private String menuGrpExpl;
 
-        @JsonProperty("sort_ord") // 2. JSON 필드명 매핑
+        @JsonProperty("sort_ord")
         private int sortOrd;
     }
 
     @Getter
-    @NoArgsConstructor // 1. 기본 생성자 추가
+    @NoArgsConstructor
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MenuItem {
-        @JsonProperty("menu_id") // 2. JSON 필드명 매핑
+        @JsonProperty("menu_id")
         private String menuId;
 
-        @JsonProperty("menu_grp_id") // 2. JSON 필드명 매핑
+        @JsonProperty("menu_grp_id")
         private String menuGrpId;
 
-        @JsonProperty("menu_nm") // 2. JSON 필드명 매핑
+        @JsonProperty("menu_nm")
         private String name;
 
-        @JsonProperty("menu_cmps_cont") // 2. JSON 필드명 매핑
+        @JsonProperty("menu_cmps_cont")
         private String menuCmpsCont;
 
-        @JsonProperty("menu_img_file") // 2. JSON 필드명 매핑
+        @JsonProperty("menu_img_file")
         private String menuImgFile;
 
-        @JsonProperty("min_menu_prc") // 2. JSON 필드명 매핑
-        private Integer minMenuPrc; // 4. Integer 타입 유지
+        @JsonProperty("min_menu_prc")
+        private Integer minMenuPrc;
 
-        @JsonProperty("sldot_yn") // 2. JSON 필드명 매핑
+        @JsonProperty("sldot_yn")
         private String sldotYn;
 
-        @JsonProperty("grp_yn") // 2. JSON 필드명 매핑
+        @JsonProperty("grp_yn")
         private String grpYn;
     }
 
-    // Option 관련 클래스는 이미 @NoArgsConstructor가 있으므로 수정 필요 없음
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor

@@ -12,7 +12,7 @@ public record MenuDetailResponse(
     public record Result(
             @JsonProperty("menu_info") MenuInfo menuInfo,
             @JsonProperty("optn_grp_list") List<OptionGroup> optnGrpList,
-            @JsonProperty("optn_list") List<OptionItem> optnList // optnList 필드 추가
+            @JsonProperty("optn_list") List<OptionItem> optnList
     ) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)

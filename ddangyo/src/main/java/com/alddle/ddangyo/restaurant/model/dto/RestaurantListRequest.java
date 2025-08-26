@@ -1,21 +1,10 @@
 package com.alddle.ddangyo.restaurant.model.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Getter
-@Setter
-@ToString
-public class RestaurantListRequest {
-
-    private double mapLngt;
-    private double mapLatt;
-    private int pageNo;
-    private String sortCd;
-    private String delvFeeFilterCd;
-    private String admtnDongCd;
-    private String minOrdAmtFilterCd;
-    private String categoryCd;
-    private int pageSize;
-}
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record RestaurantListRequest(
+        @JsonProperty("category_cd") String categoryCd,
+        @JsonProperty("sort_cd") String sortCd
+) {}

@@ -19,8 +19,8 @@ public class FcmTokenDto {
     }
 
     public static record DeleteRequest(
-            String fcmToken) {
-    }
+            String fcmToken
+            ) {}
 
     public static record Response(
             boolean success,

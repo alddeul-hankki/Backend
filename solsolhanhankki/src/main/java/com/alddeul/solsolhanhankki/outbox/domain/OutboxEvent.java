@@ -1,4 +1,4 @@
-package com.alddeul.solsolhanhankki.outbox.model.entity;
+package com.alddeul.solsolhanhankki.outbox.domain;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;

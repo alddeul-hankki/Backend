@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.alddeul.solsolhanhankki.notification.domain.FcmToken;
 import com.alddeul.solsolhanhankki.notification.dto.NotificationEventDto;
 import com.alddeul.solsolhanhankki.notification.repository.FcmTokenRepository;
-import com.alddeul.solsolhanhankki.outbox.model.entity.OutboxEvent;
+import com.alddeul.solsolhanhankki.outbox.domain.OutboxEvent;
 import com.alddeul.solsolhanhankki.outbox.repository.OutboxEventRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

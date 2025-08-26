@@ -8,24 +8,23 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alddeul.solsolhanhankki.notification.domain.FcmToken;
 import com.alddeul.solsolhanhankki.notification.dto.FcmTokenDto;
 import com.alddeul.solsolhanhankki.notification.repository.FcmTokenRepository;
-import com.alddeul.solsolhanhankki.outbox.repository.OutboxEventRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class FcmTokenService {
     private final FcmTokenRepository fcmTokenRepository;
-
+    
+    @Transactional
     public FcmTokenDto.Response saveFcmToken(FcmTokenDto.SaveRequest request) {
     	try {
             fcmTokenRepository.findByToken(request.fcmToken())
-                    .ifPresent(existingToken -> fcmTokenRepository.deleteByToken(request.fcmToken()));
-
+                    .ifPresent(existingToken ->fcmTokenRepository.deleteByToken(request.fcmToken()));
+            fcmTokenRepository.flush();
+            
             FcmToken fcmToken = FcmToken.create(
                     request.fcmToken(),
                     request.getDeviceTypeEnum(),
@@ -44,7 +43,8 @@ public class FcmTokenService {
             return FcmTokenDto.Response.fail("FCM 토큰 저장에 실패했습니다: " + e.getMessage());
         }
     }
-
+    
+    @Transactional
     public FcmTokenDto.Response deleteFcmToken(String fcmToken) {
         try {
             fcmTokenRepository.deleteByToken(fcmToken);

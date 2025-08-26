@@ -11,34 +11,97 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
-@Document(collection = "menuDetails")
 @Getter
 @Setter
 @NoArgsConstructor
+@Document(collection = "menu_detail")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MenuDetail {
 
     @Id
     private String id;
 
-    // menu_id를 식별자로 사용하기 위해 별도 필드로 저장합니다.
-    @Field("menu_id")
-    private String menuId;
-
     @Field("patsto_no")
     private String patstoNo;
 
-    @Field("result")
+    @Field("menu_id")
+    private String menuId;
+
+    @JsonProperty("result")
     private Result result;
 
     @Getter
     @Setter
+    @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Result {
         @JsonProperty("menu_info")
-        private Menu.MenuItem menuInfo;
+        private MenuInfo menuInfo;
 
         @JsonProperty("optn_grp_list")
-        private List<Menu.OptionGroup> optnGrpList;
+        private List<OptionGroup> optnGrpList;
+
+        @JsonProperty("optn_list")
+        private List<OptionItem> optnList;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class MenuInfo {
+        @JsonProperty("menu_id")
+        private String menuId;
+
+        @JsonProperty("menu_nm")
+        private String name;
+
+        @JsonProperty("menu_cmps_cont")
+        private String menuCmpsCont;
+
+        @JsonProperty("sldot_yn")
+        private String sldotYn;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class OptionGroup {
+        @JsonProperty("optn_grp_id")
+        private String optnGrpId;
+
+        @JsonProperty("optn_grp_nm")
+        private String optnGrpNm;
+
+        @JsonProperty("ess_slct_yn")
+        private String essSlctYn;
+
+        @JsonProperty("min_slct_cnt")
+        private int minSlctCnt;
+
+        @JsonProperty("max_slct_cnt")
+        private int maxSlctCnt;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class OptionItem {
+        @JsonProperty("optn_grp_id")
+        private String optnGrpId;
+
+        @JsonProperty("optn_id")
+        private String optnId;
+
+        @JsonProperty("optn_nm")
+        private String optnNm;
+
+        @JsonProperty("optn_unitprc")
+        private double optnUnitprc;
+
+        @JsonProperty("sldot_yn")
+        private String sldotYn;
     }
 }

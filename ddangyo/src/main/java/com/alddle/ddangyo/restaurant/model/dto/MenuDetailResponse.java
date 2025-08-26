@@ -11,7 +11,8 @@ public record MenuDetailResponse(
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Result(
             @JsonProperty("menu_info") MenuInfo menuInfo,
-            @JsonProperty("optn_grp_list") List<OptionGroup> optnGrpList
+            @JsonProperty("optn_grp_list") List<OptionGroup> optnGrpList,
+            @JsonProperty("optn_list") List<OptionItem> optnList // optnList 필드 추가
     ) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -23,14 +24,18 @@ public record MenuDetailResponse(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record OptionGroup(
+            @JsonProperty("optn_grp_id") String optnGrpId,
             @JsonProperty("optn_grp_nm") String optnGrpNm,
             @JsonProperty("essntl_optn_yn") String essntlOptnYn,
-            @JsonProperty("optn_list") List<OptionItem> optnList
+            @JsonProperty("min_slct_cnt") int minSlctCnt,
+            @JsonProperty("max_slct_cnt") int maxSlctCnt
     ) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record OptionItem(
+            @JsonProperty("optn_grp_id") String optnGrpId,
+            @JsonProperty("optn_id") String optnId,
             @JsonProperty("optn_nm") String optnNm,
-            @JsonProperty("optn_unitprc") Integer optnUnitprc
+            @JsonProperty("optn_unitprc") double optnUnitprc
     ) {}
 }

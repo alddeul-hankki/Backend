@@ -28,20 +28,18 @@ public class RestaurantController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    @PostMapping("/restaurants/homemenu")
-    public ResponseEntity<HomeMenuResponse> getHomeMenu(@RequestBody HomeMenuRequest requestDto){
-        String storeId = requestDto.dmaShopSearch().patstoNo();
-        return restaurantService.findHomeMenu(storeId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     @PostMapping("/restaurants/menu")
     public ResponseEntity<MenuDetailResponse> getMenuDetail(@RequestBody MenuDetailRequest requestDto) {
         String storeId = requestDto.dmaMenuInfo().patstoNo();
         String menuId = requestDto.dmaMenuInfo().menuId();
         return restaurantService.findMenuDetail(storeId, menuId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/restaurantinfo")
+    public ResponseEntity<RestaurantInfoResponse> getRestaurantInfo(@RequestBody RestaurantInfoRequest request) {
+        return restaurantService.getRestaurantInfo(request)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

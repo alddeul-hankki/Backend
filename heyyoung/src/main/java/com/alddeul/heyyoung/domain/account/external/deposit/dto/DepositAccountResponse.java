@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+
+@Getter
+@NoArgsConstructor
 public class DepositAccountResponse {
     @JsonProperty("Header")
     private ResponseHeader header;

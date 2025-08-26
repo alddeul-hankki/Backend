@@ -46,16 +46,16 @@ public class FinanceAccountClient {
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireTransactionHistory", request, InquireAccountHistoryResponse.class);
     }
 
-    public FinanceApiResponse<WithdrawalAccountResponse> withdrawDemandDepositAccount(String userKey, String accountNo, Long transactionBalance, String transactionSummary) {
+    public FinanceApiResponse<WithdrawalAccountResponse> withdrawDemandDepositAccount(String userKey, String accountNo, Long transactionBalance, String transactionSummary, String instTxnNo) {
         String apiName = "withdrawDemandDepositAccount";
-        RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
+        RequestHeader header = RequestHeader.of(apiName, appKey, userKey, instTxnNo);
         WithdrawalAccountRequest request = WithdrawalAccountRequest.of(header, accountNo, transactionBalance, transactionSummary);
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/updateDemandDepositAccountWithdrawal", request, WithdrawalAccountResponse.class);
     }
 
-    public FinanceApiResponse<DepositAccountResponse> depositDemandDepositAccount(String userKey, String accountNo, Long transactionBalance, String transactionSummary) {
+    public FinanceApiResponse<DepositAccountResponse> depositDemandDepositAccount(String userKey, String accountNo, Long transactionBalance, String transactionSummary, String instTxnNo) {
         String apiName = "depositDemandDepositAccount";
-        RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
+        RequestHeader header = RequestHeader.of(apiName, appKey, userKey, instTxnNo);
         DepositAccountRequest request = DepositAccountRequest.of(header, accountNo, transactionBalance, transactionSummary);
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/updateDemandDepositAccountDeposit", request, DepositAccountResponse.class);
     }

@@ -74,4 +74,5 @@ HELP.md
 # secret variable
 # =========================
 .env
-src/main/resources/application-dev.yml
+src/main/resources/firebase-service-account.json
+

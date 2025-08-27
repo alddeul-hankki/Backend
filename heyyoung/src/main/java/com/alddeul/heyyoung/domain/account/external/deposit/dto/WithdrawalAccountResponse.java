@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 
 @Getter
 @NoArgsConstructor
@@ -14,7 +12,7 @@ public class WithdrawalAccountResponse {
     @JsonProperty("Header")
     private ResponseHeader header;
     @JsonProperty("REC")
-    private List<Rec> rec;
+    private Rec rec;
 
     @Getter
     @NoArgsConstructor

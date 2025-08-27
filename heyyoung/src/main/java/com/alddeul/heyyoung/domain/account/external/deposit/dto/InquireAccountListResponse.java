@@ -1,11 +1,9 @@
 package com.alddeul.heyyoung.domain.account.external.deposit.dto;
 
- import com.alddeul.heyyoung.common.api.external.dto.ResponseHeader;
+import com.alddeul.heyyoung.common.api.external.dto.ResponseHeader;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -13,7 +11,7 @@ public class InquireAccountListResponse {
     @JsonProperty("Header")
     private ResponseHeader header;
     @JsonProperty("REC")
-    private List<Rec> rec;
+    private Rec rec;
 
     @Getter
     @NoArgsConstructor

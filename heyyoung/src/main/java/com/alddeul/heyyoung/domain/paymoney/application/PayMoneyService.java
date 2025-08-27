@@ -60,7 +60,7 @@ public class PayMoneyService {
 
         outboxRepository.save(Outbox.ready(intent.getId(), Outbox.OutboxType.BANK_WITHDRAW));
 
-        return new PayMoneyTransactionResponse(PayMoneyTransactionResponse.Status.PROCESSING, "처리 중입니다.");
+        return PayMoneyTransactionResponse.of(PayMoneyTransactionResponse.Status.PROCESSING, "페이머니에 충전 중입니다.");
     }
 
     @Transactional
@@ -87,7 +87,7 @@ public class PayMoneyService {
 
         outboxRepository.save(Outbox.ready(intent.getId(), Outbox.OutboxType.BANK_DEPOSIT));
 
-        return new PayMoneyTransactionResponse(PayMoneyTransactionResponse.Status.PROCESSING, "처리 중입니다.");
+        return PayMoneyTransactionResponse.of(PayMoneyTransactionResponse.Status.PROCESSING, "페이머니 환불 처리 중입니다.");
     }
 
     public void processBankWithdrawal(Long intentId) {

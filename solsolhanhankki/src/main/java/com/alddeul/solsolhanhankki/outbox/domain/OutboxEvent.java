@@ -1,10 +1,9 @@
-package com.alddeul.solsolhanhankki.outbox.model.entity;
+package com.alddeul.solsolhanhankki.outbox.domain;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
-import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseTimeEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.persistence.Column;

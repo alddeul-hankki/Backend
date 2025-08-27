@@ -1,6 +1,10 @@
-package your.package.domain;
+package com.alddeul.heyyoung.domain.timetable.model.entity;
 
-import jakarta.persistence.*;
+import com.alddeul.heyyoung.common.jpa.base.entity.BaseIdentityEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

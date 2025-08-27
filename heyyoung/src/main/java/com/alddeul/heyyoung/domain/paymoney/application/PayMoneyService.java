@@ -13,8 +13,8 @@ import com.alddeul.heyyoung.domain.paymoney.model.entity.TopUpIntent;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.PayMoneyRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.RefundIntentRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.TopUpIntentRepository;
-import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyRequest;
-import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyResponse;
+import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyTransactionRequest;
+import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyTransactionResponse;
 import com.alddeul.heyyoung.domain.user.application.UserFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,17 +37,17 @@ public class PayMoneyService {
     private final UserFacade userFacade;
 
     @Transactional
-    public PayMoneyResponse requestTopUpPayMoney(PayMoneyRequest payMoneyRequest) {
-        validateAmount(payMoneyRequest.transactionBalance());
+    public PayMoneyTransactionResponse requestTopUpPayMoney(PayMoneyTransactionRequest payMoneyTransactionRequest) {
+        validateAmount(payMoneyTransactionRequest.transactionBalance());
 
-        final String email = payMoneyRequest.email();
+        final String email = payMoneyTransactionRequest.email();
 
         final String userKey = userFacade.getUserKey(email);
-        final String accountNo = payMoneyRequest.accountNo();
-        final Long amount = payMoneyRequest.transactionBalance();
-        final String summary = payMoneyRequest.transactionSummary().isEmpty()
+        final String accountNo = payMoneyTransactionRequest.accountNo();
+        final Long amount = payMoneyTransactionRequest.transactionBalance();
+        final String summary = payMoneyTransactionRequest.transactionSummary().isEmpty()
                 ? "PayMoney 충전"
-                : payMoneyRequest.transactionSummary();
+                : payMoneyTransactionRequest.transactionSummary();
 
         /*
           랜덤한 20자리 생성. SSAFY의 YYYYMMDDHHMMSS 와 다르게 랜덤하게 설정했습니다.
@@ -60,21 +60,21 @@ public class PayMoneyService {
 
         outboxRepository.save(Outbox.ready(intent.getId(), Outbox.OutboxType.BANK_WITHDRAW));
 
-        return new PayMoneyResponse(PayMoneyResponse.Status.PROCESSING, "처리 중입니다.");
+        return new PayMoneyTransactionResponse(PayMoneyTransactionResponse.Status.PROCESSING, "처리 중입니다.");
     }
 
     @Transactional
-    public PayMoneyResponse requestRefundPayMoney(PayMoneyRequest payMoneyRequest) {
-        validateAmount(payMoneyRequest.transactionBalance());
+    public PayMoneyTransactionResponse requestRefundPayMoney(PayMoneyTransactionRequest payMoneyTransactionRequest) {
+        validateAmount(payMoneyTransactionRequest.transactionBalance());
 
-        final String email = payMoneyRequest.email();
+        final String email = payMoneyTransactionRequest.email();
 
         final String userKey = userFacade.getUserKey(email);
-        final String accountNo = payMoneyRequest.accountNo();
-        final Long amount = payMoneyRequest.transactionBalance();
-        final String summary = payMoneyRequest.transactionSummary().isEmpty()
+        final String accountNo = payMoneyTransactionRequest.accountNo();
+        final Long amount = payMoneyTransactionRequest.transactionBalance();
+        final String summary = payMoneyTransactionRequest.transactionSummary().isEmpty()
                 ? "PayMoney 환불"
-                : payMoneyRequest.transactionSummary();
+                : payMoneyTransactionRequest.transactionSummary();
 
         /*
           랜덤한 20자리 생성. SSAFY의 YYYYMMDDHHMMSS 와 다르게 랜덤하게 설정했습니다.
@@ -87,7 +87,7 @@ public class PayMoneyService {
 
         outboxRepository.save(Outbox.ready(intent.getId(), Outbox.OutboxType.BANK_DEPOSIT));
 
-        return new PayMoneyResponse(PayMoneyResponse.Status.PROCESSING, "처리 중입니다.");
+        return new PayMoneyTransactionResponse(PayMoneyTransactionResponse.Status.PROCESSING, "처리 중입니다.");
     }
 
     public void processBankWithdrawal(Long intentId) {

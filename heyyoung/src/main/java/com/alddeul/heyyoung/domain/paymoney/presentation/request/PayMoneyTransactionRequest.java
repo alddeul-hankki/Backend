@@ -1,6 +1,6 @@
 package com.alddeul.heyyoung.domain.paymoney.presentation.request;
 
-public record PayMoneyRequest(
+public record PayMoneyTransactionRequest(
         String email,
         String accountNo,
         Long transactionBalance,

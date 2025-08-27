@@ -1,6 +1,6 @@
 package com.alddeul.heyyoung.domain.paymoney.presentation.response;
 
-public record PayMoneyResponse(
+public record PayMoneyTransactionResponse(
     Status status,
     String Message
 ) {

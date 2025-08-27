@@ -2,6 +2,7 @@ package com.alddeul.heyyoung.domain.account.presentation;
 
 import com.alddeul.heyyoung.common.api.response.ApiResponse;
 import com.alddeul.heyyoung.domain.account.application.AccountService;
+import com.alddeul.heyyoung.domain.account.presentation.request.CreateAccountRequest;
 import com.alddeul.heyyoung.domain.account.presentation.request.TransactionHistoryRequest;
 import com.alddeul.heyyoung.domain.account.presentation.response.AccountResponse;
 import com.alddeul.heyyoung.domain.account.presentation.response.AccountSummaryResponse;
@@ -25,8 +26,8 @@ public class AccountController {
     }
 
     @PostMapping()
-    public ApiResponse<AccountResponse> createAccount(@RequestParam String email) {
-        var response = accountService.createAccount(email);
+    public ApiResponse<AccountResponse> createAccount(@RequestBody CreateAccountRequest request) {
+        var response = accountService.createAccount(request.email());
         return ApiResponse.created(response);
     }
 

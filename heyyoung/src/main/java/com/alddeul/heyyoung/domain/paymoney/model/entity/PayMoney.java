@@ -12,7 +12,7 @@ import org.hibernate.annotations.Check;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "pay_money_paymoney",
+@Table(name = "paymoney",
         uniqueConstraints = @UniqueConstraint(name = "uk_paymoney_user", columnNames = "user_id"))
 @Check(constraints = "amount >= 0")
 public class PayMoney extends BaseIdentityEntity {

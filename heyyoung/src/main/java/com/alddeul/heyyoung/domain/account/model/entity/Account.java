@@ -54,4 +54,11 @@ public class Account extends BaseIdentityEntity {
         this.verifyStatus = VerifyStatus.PENDING;
     }
 
+    public void confirm() {
+        this.verifyStatus = VerifyStatus.VERIFIED;
+    }
+
+    public void cancel() {
+        this.verifyStatus = VerifyStatus.FAILED;
+    }
 }

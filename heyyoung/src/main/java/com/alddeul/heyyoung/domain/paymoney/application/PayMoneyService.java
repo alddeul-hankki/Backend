@@ -4,9 +4,9 @@ import com.alddeul.heyyoung.common.api.external.dto.ErrorCode;
 import com.alddeul.heyyoung.common.api.external.dto.FinanceApiResponse;
 import com.alddeul.heyyoung.common.outbox.entity.Outbox;
 import com.alddeul.heyyoung.common.outbox.repository.OutboxRepository;
+import com.alddeul.heyyoung.domain.account.external.deposit.FinanceAccountClient;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.DepositAccountResponse;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.WithdrawalAccountResponse;
-import com.alddeul.heyyoung.domain.account.external.deposit.port.AccountDepositPort;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.PayMoney;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.RefundIntent;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.TopUpIntent;
@@ -35,7 +35,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class PayMoneyService {
-    private final AccountDepositPort accountDepositPort;
+    private final FinanceAccountClient accountClient;
     private final PayMoneyRepository payMoneyRepository;
     private final OutboxRepository outboxRepository;
     private final TopUpIntentRepository topUpIntentRepository;
@@ -142,7 +142,7 @@ public class PayMoneyService {
         }
 
         try {
-            FinanceApiResponse<WithdrawalAccountResponse> response = accountDepositPort.withdraw(
+            FinanceApiResponse<WithdrawalAccountResponse> response = accountClient.withdrawDemandDepositAccount(
                     intent.getUserKey(),
                     intent.getAccountNo(),
                     intent.getAmount(),
@@ -177,7 +177,7 @@ public class PayMoneyService {
 
         // 은행 입금 처리
         try {
-            FinanceApiResponse<DepositAccountResponse> response = accountDepositPort.deposit(
+            FinanceApiResponse<DepositAccountResponse> response = accountClient.depositDemandDepositAccount(
                     intent.getUserKey(),
                     intent.getAccountNo(),
                     intent.getAmount(),
@@ -214,7 +214,7 @@ public class PayMoneyService {
         }
         // 은행 입금 처리
         try {
-            FinanceApiResponse<DepositAccountResponse> response = accountDepositPort.deposit(
+            FinanceApiResponse<DepositAccountResponse> response = accountClient.depositDemandDepositAccount(
                     intent.getUserKey(),
                     intent.getAccountNo(),
                     intent.getAmount(),

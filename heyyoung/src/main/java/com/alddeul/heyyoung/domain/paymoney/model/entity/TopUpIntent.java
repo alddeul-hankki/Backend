@@ -97,7 +97,19 @@ public class TopUpIntent extends BaseIdentityEntity {
      */
     public void markCredited() {
         requireStatus(TopUpStatus.DEBIT_CONFIRMED);
-        this.status = TopUpStatus.CREDITED;
+        this.status = TopUpStatus.CREDIT_CONFIRMED;
+    }
+
+    public void markCompensateRequired() {
+        this.status = TopUpStatus.COMPENSATE_REQUIRED;
+    }
+
+    public void markCompensated(String instTxnNo) {
+        requireStatus(TopUpStatus.COMPENSATE_REQUIRED);
+        if (this.instTxnNo != null && !Objects.equals(this.instTxnNo, instTxnNo)) {
+            throw new IllegalStateException("instTxnNo already set; cannot overwrite");
+        }
+        this.status = TopUpStatus.COMPENSATED;
     }
 
     private void requireStatus(TopUpStatus expected) {
@@ -107,9 +119,11 @@ public class TopUpIntent extends BaseIdentityEntity {
     }
 
     public enum TopUpStatus {
-        INIT,              // 의도만 생성됨
-        DEBIT_CONFIRMED,   // 은행 출금 성공
-        FAILED,            // 실패
-        CREDITED           // 페이머니 충전 완료
+        INIT,                 // 의도 생성
+        DEBIT_CONFIRMED,      // 은행 출금 성공 (지갑 충전 대기)
+        CREDIT_CONFIRMED,     // 지갑 충전 성공 (정상 종료)
+        COMPENSATE_REQUIRED,  // 지갑 충전 실패 → 은행 출금 보상 필요(재입금)
+        COMPENSATED,          // 보상 완료
+        FAILED                // 명시적 실패(보상 불필요)
     }
 }

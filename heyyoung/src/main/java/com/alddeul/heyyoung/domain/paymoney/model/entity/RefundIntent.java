@@ -78,19 +78,11 @@ public class RefundIntent extends BaseIdentityEntity {
     /**
      * 은행 계좌 입금 성공 확인: instTxnNo 일치성만 검증(초기 세팅 불변)
      */
-    public void markRefundConfirmed(String refundTxnNo) {
+    public void markRefundFinished(String refundTxnNo) {
         requireAnyOf(RefundStatus.PRE_DEBIT);
         if (this.instTxnNo != null && !Objects.equals(this.instTxnNo, refundTxnNo)) {
             throw new IllegalStateException("instTxnNo already set; cannot overwrite");
         }
-        this.status = RefundStatus.REFUND_CONFIRMED;
-    }
-
-    /**
-     * 지갑 차감 완료(은행 CREDIT 확정 이후에만 허용)
-     */
-    public void markDebited() {
-        requireStatus(RefundStatus.REFUND_CONFIRMED);
         this.status = RefundStatus.REFUND_FINISHED;
     }
 
@@ -121,12 +113,11 @@ public class RefundIntent extends BaseIdentityEntity {
     }
 
     public enum RefundStatus {
-        INIT,               // 의도만 생성됨
-        PRE_DEBIT,          // 지갑에서 선차감 (선차감 후 나중에 확정)
-        REFUND_CONFIRMED,   // 은행 입금 성공
-        FAILED,             // 복원이 필요 없는 실패
-        REFUND_FINISHED,    // 환불 완료(정상 종료)
-        COMPENSATE_REQUIRED,// 은행 입금 실패 후, 선차감 금액 환불 필요
-        COMPENSATED_FINISHED// 선차감 금액 환불 완료
+        INIT,                   // 의도만 생성됨
+        PRE_DEBIT,              // 지갑에서 선차감 (선차감 후 나중에 확정)
+        REFUND_FINISHED,        // 환불 완료(정상 종료)
+        COMPENSATE_REQUIRED,    // 은행 입금 실패 후, 선차감 금액 환불 필요
+        COMPENSATED_FINISHED,   // 선차감 금액 환불 완료
+        FAILED                  // 복원이 필요 없는 실패
     }
 }

@@ -74,3 +74,5 @@ HELP.md
 # secret variable
 # =========================
 .env
+src/main/resources/fire-servcie-account.json
+

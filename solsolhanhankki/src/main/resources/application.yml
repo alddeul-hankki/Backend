@@ -24,4 +24,10 @@ financial:
     key: ${FINANCIAL_API_KEY}
     name: 쏠쏠한한끼
     default:
-      account-type: ${FINANCIAL_DEFAULT_ACCOUNT_TYPE}
+      account-type: ${FINANCIAL_DEFAULT_ACCOUNT_TYPE}			
+
+firebase:
+  service:
+    account:
+      key:
+        path: ${FIREBASE_SERVICE_ACCOUNT}

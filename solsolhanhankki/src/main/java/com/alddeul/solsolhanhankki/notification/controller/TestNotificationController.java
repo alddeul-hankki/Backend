@@ -31,7 +31,7 @@ public class TestNotificationController {
             NotificationEventDto notification = new NotificationEventDto(
                 userId,
                 "테스트 알림",
-                "테스트 알립입니다.!",
+                "테스트 알림입니다.!",
                 NotificationEventType.FCM_NOTIFICATION_SEND,
                 OffsetDateTime.now()
             );

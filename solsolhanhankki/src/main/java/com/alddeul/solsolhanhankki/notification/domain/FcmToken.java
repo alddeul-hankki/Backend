@@ -1,6 +1,6 @@
 package com.alddeul.solsolhanhankki.notification.domain;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
 
@@ -46,7 +46,7 @@ public class FcmToken extends BaseIdentityEntity {
     }
 
     public boolean isExpired() {
-        return getCreatedAt().isBefore(LocalDateTime.now().minusDays(60));
+        return getCreatedAt().isBefore(OffsetDateTime.now().minusDays(60));
     }
 
     public boolean belongsToUser(long userId) {

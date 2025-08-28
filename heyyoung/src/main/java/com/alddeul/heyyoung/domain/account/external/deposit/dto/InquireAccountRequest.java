@@ -9,17 +9,15 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class InquireAccountHistoryRequest {
+public class InquireAccountRequest {
     @JsonProperty("Header")
     private RequestHeader header;
     private String accountNo;
-    private Long transactionUniqueNo;
 
-    public static InquireAccountHistoryRequest of(RequestHeader header, String accountNo, Long transactionUniqueNo) {
-        return InquireAccountHistoryRequest.builder()
+    public static InquireAccountRequest of(RequestHeader header, String accountNo) {
+        return InquireAccountRequest.builder()
                 .header(header)
                 .accountNo(accountNo)
-                .transactionUniqueNo(transactionUniqueNo)
                 .build();
     }
 }

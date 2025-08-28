@@ -55,10 +55,17 @@ public class Outbox extends BaseIdentityEntity {
     }
 
     public void markAttempt() {
-        this.attempts = this.attempts + 1;
+        this.attempts++;
     }
 
     public void markDone() {
         this.status = OutboxStatus.DONE;
+    }
+
+    // 재시도
+    public void markFailed() {
+        this.nextRunAt = OffsetDateTime.now().plusSeconds(Math.min(60, attempts * 2));
+        this.status = OutboxStatus.PENDING;
+        if (attempts > 5) this.status = OutboxStatus.FAILED;
     }
 }

@@ -13,11 +13,15 @@ import com.alddeul.heyyoung.domain.paymoney.model.entity.TopUpIntent;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.PayMoneyRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.RefundIntentRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.TopUpIntentRepository;
+import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyCreateRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyInquiryRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyTransactionRequest;
+import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyCreateResponse;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyInquiryResponse;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyTransactionResponse;
 import com.alddeul.heyyoung.domain.user.application.UserFacade;
+import com.alddeul.heyyoung.domain.user.model.entity.SolUser;
+import com.alddeul.heyyoung.domain.user.model.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +40,7 @@ public class PayMoneyService {
     private final OutboxRepository outboxRepository;
     private final TopUpIntentRepository topUpIntentRepository;
     private final RefundIntentRepository refundIntentRepository;
+    private final UserRepository userRepository;
     private final UserFacade userFacade;
 
     @Transactional
@@ -151,10 +156,6 @@ public class PayMoneyService {
         RefundIntent intent = refundIntentRepository.findById(intentId)
                 .orElseThrow(() -> new IllegalArgumentException("RefundIntent missing: " + intentId));
 
-        if (intent.getStatus() != RefundIntent.RefundStatus.PRE_DEBIT) {
-            log.info("은행 입금 전 페이머니에서 선차감 상태가 아닙니다. intentId={}", intent.getId());
-            return;
-        }
         // 은행 입금 처리
         try {
             FinanceApiResponse<DepositAccountResponse> response = accountDepositPort.deposit(
@@ -170,7 +171,7 @@ public class PayMoneyService {
                         ? response.data().getHeader().getInstitutionTransactionUniqueNo()
                         : intent.getInstTxnNo();
 
-                intent.markRefundConfirmed(refundTxnNo);
+                intent.markRefundFinished(refundTxnNo);
                 refundIntentRepository.save(intent);
                 return;
             }
@@ -185,11 +186,48 @@ public class PayMoneyService {
     }
 
     @Transactional
+    public void compensateWithdrawal(Long intentId) {
+        TopUpIntent intent = topUpIntentRepository.findByIdForUpdate(intentId)
+                .orElseThrow(() -> new IllegalArgumentException("TopUpIntent missing: " + intentId));
+        if (intent.getStatus() != TopUpIntent.TopUpStatus.COMPENSATE_REQUIRED) {
+            log.info("보상 조건이 만족되지 못했습니다.: intentId={}", intent.getId());
+            return;
+        }
+        // 은행 입금 처리
+        try {
+            FinanceApiResponse<DepositAccountResponse> response = accountDepositPort.deposit(
+                    intent.getUserKey(),
+                    intent.getAccountNo(),
+                    intent.getAmount(),
+                    intent.getSummary(),
+                    intent.getInstTxnNo()
+            );
+
+            if (response.success() || ErrorCode.H1007.equals(response.error().responseCode())) {
+                String instTxnNo = (response.success() && response.data() != null)
+                        ? response.data().getHeader().getInstitutionTransactionUniqueNo()
+                        : intent.getInstTxnNo();
+
+                intent.markCompensated(instTxnNo);
+                topUpIntentRepository.save(intent);
+                return;
+            }
+            log.error("은행으로의 입금 (보상 단계)이 실패했습니다.: intentId={}, error={}",
+                    intent.getId(), response.error());
+            throw new IllegalStateException("은행 입금 실패: " + response.error());
+
+        } catch (Exception e) {
+            log.error("Bank refund exception: intentId={}", intent.getId(), e);
+            throw new IllegalStateException("Refund deposit exception", e);
+        }
+    }
+
+    @Transactional
     public void confirmWithdrawAndCredit(Long intentId) {
         TopUpIntent intent = topUpIntentRepository.findByIdForUpdate(intentId)
                 .orElseThrow(() -> new IllegalArgumentException("TopUpIntent missing: " + intentId));
 
-        if (intent.getStatus() == TopUpIntent.TopUpStatus.CREDITED) {
+        if (intent.getStatus() == TopUpIntent.TopUpStatus.CREDIT_CONFIRMED) {
             log.info("TopUp already credited: intentId={}, email={}", intent.getId(), intent.getEmail());
             return;
         }
@@ -215,7 +253,7 @@ public class PayMoneyService {
     @Transactional
     public void subtractAmount(Long intentId) {
         RefundIntent intent = refundIntentRepository.findByIdForUpdate(intentId)
-                .orElseThrow(() -> new IllegalArgumentException("RefundIntentIntent missing: " + intentId));
+                .orElseThrow(() -> new IllegalArgumentException("RefundIntent missing: " + intentId));
 
         // 이미 완료된 refund 작업
         if (intent.getStatus() == RefundIntent.RefundStatus.REFUND_FINISHED) {
@@ -247,7 +285,7 @@ public class PayMoneyService {
     @Transactional
     public void compensateDebit(Long intentId) {
         RefundIntent intent = refundIntentRepository.findByIdForUpdate(intentId)
-                .orElseThrow(() -> new IllegalArgumentException("RefundIntentIntent missing: " + intentId));
+                .orElseThrow(() -> new IllegalArgumentException("RefundIntent missing: " + intentId));
         if (intent.getStatus() != RefundIntent.RefundStatus.COMPENSATE_REQUIRED) {
             log.info("보상 조건이 만족되지 못했습니다.: intentId={}", intent.getId());
             return;
@@ -265,21 +303,17 @@ public class PayMoneyService {
     }
 
     @Transactional
-    public void confirmDebit(Long intentId) {
+    public void markTopUpCompensateRequired(Long intentId) {
+        TopUpIntent intent = topUpIntentRepository.findByIdForUpdate(intentId)
+                .orElseThrow(() -> new IllegalArgumentException("TopUpIntent missing: " + intentId));
+        intent.markCompensateRequired();
+    }
+
+    @Transactional
+    public void markRefundCompensateRequired(Long intentId) {
         RefundIntent intent = refundIntentRepository.findByIdForUpdate(intentId)
-                .orElseThrow(() -> new IllegalArgumentException("RefundIntentIntent missing: " + intentId));
-
-        if (intent.getStatus() == RefundIntent.RefundStatus.REFUND_FINISHED) {
-            log.info("Refund already debited: intentId={}, email={}", intent.getId(), intent.getEmail());
-            return;
-        }
-
-        if (intent.getStatus() != RefundIntent.RefundStatus.REFUND_CONFIRMED) {
-            throw new IllegalStateException("Cannot credit: invalid status " + intent.getStatus() + " for intent " + intent.getId());
-        }
-
-        intent.markDebited();
-        refundIntentRepository.save(intent);
+                .orElseThrow(() -> new IllegalArgumentException("RefundIntent missing: " + intentId));
+        intent.markCompensateRequired();
     }
 
     /**

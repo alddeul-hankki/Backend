@@ -23,16 +23,21 @@ public class OutboxWorker {
 
     @Scheduled(fixedDelay = 1000L)
     public void run() {
-        Outbox job = tx.claimOneOrNull();
-        if (job == null) return;
+        int hops = 0;
+        long deadlineNanos = System.nanoTime() + 50_000_000L; // 50ms
+        while (System.nanoTime() < deadlineNanos && hops < 20) { // 과도 실행 방지
+            Outbox job = tx.claimOneOrNull();
+            if (job == null) return;
 
-        try {
-            switch (job.getType()) {
-                case BANK_WITHDRAW -> handleBankWithdraw(job);
-                case BANK_DEPOSIT -> handleBankDeposit(job);
+            try {
+                switch (job.getType()) {
+                    case BANK_WITHDRAW -> handleBankWithdraw(job);
+                    case BANK_DEPOSIT -> handleBankDeposit(job);
+                }
+            } catch (RuntimeException e) {
+                tx.markFailed(job.getId());
             }
-        } catch (RuntimeException e) {
-            tx.markSucceeded(job.getId());
+            hops++;
         }
     }
 
@@ -40,54 +45,64 @@ public class OutboxWorker {
         TopUpIntent intent = topUpIntentRepository.findById(job.getIntentId())
                 .orElseThrow(() -> new IllegalArgumentException("TopUpIntent missing: " + job.getIntentId()));
 
-
         switch (intent.getStatus()) {
-            // 이미 완료된 입금 작업
-            case CREDITED -> {
+            // 이미 종료된 상태
+            case CREDIT_CONFIRMED, COMPENSATED, FAILED -> {
                 tx.markSucceeded(job.getId());
                 return;
             }
 
-            // 계좌에서 출금이 완료됨. 이후 paymoney에 충전 로직만 필요
-            case DEBIT_CONFIRMED ->  {
-                payMoneyService.confirmWithdrawAndCredit(job.getIntentId());
-                tx.markSucceeded(job.getId());
-                return;
-            }
-
-            // 보상이 필요 없는 실패. 사용자가 다시 요청을 보내야함.
-            case FAILED -> {
-                tx.markSucceeded(job.getId());
-                return;
-            }
-
-            // 첫 시작하는 작업
+            // 1단계: 은행 출금 단계
             case INIT -> {
-                // 바로 아래 try문 실행
-            }
-
-            default -> {
-                log.warn("존재하지 않는 상태입니다.. type={}, jobId={}, status={}",
-                        job.getType(), job.getId(), intent.getStatus());
-
-                tx.markSucceeded(job.getId());
+                try {
+                    payMoneyService.processBankWithdrawal(job.getIntentId());
+                    log.info("은행에서 출금에 성공했습니다.");
+                    tx.enqueue(job.getIntentId(), Outbox.OutboxType.BANK_WITHDRAW);
+                    tx.markSucceeded(job.getId());
+                } catch (RuntimeException e) {
+                    log.warn("은행 출금에 실패했습니다. intentId={}", job.getIntentId(), e);
+                    tx.markFailed(job.getId());
+                }
                 return;
             }
-        }
-        try {
-            payMoneyService.processBankWithdrawal(job.getIntentId());
 
-            payMoneyService.confirmWithdrawAndCredit(job.getIntentId());
-            tx.markSucceeded(job.getId());
-        } catch (RuntimeException e) {
-            log.warn("TopUp withdrawal failed. intentId={}", job.getIntentId(), e);
+            // 2단계: 지갑 충전 단계
+            // 만약 intent의 상태 전이가 이루어지지 않고 종료되어도, 다시 지갑 재충전 로직을 거치기 때문에 문제가 안됨.
+            case DEBIT_CONFIRMED -> {
+                try {
+                    log.info("지갑 충전 시도중...");
+                    payMoneyService.confirmWithdrawAndCredit(job.getIntentId());
+                    tx.markSucceeded(job.getId());
+                } catch (RuntimeException e) {
+                    try {
+                        log.warn("지갑 충전 실패. 보상 로직 시작...");
+                        payMoneyService.markTopUpCompensateRequired(job.getIntentId());
+                        log.info("markTopUpCompensateRequired 완료");
 
-            intent = topUpIntentRepository.findById(job.getIntentId())
-                    .orElseThrow(() -> new IllegalArgumentException("TopUpIntent missing: " + job.getIntentId()));
-            intent.markFailed();
-            topUpIntentRepository.save(intent);
+                        tx.enqueue(job.getIntentId(), Outbox.OutboxType.BANK_WITHDRAW);
+                        log.info("enqueue 완료");
+                    } catch (Exception compensationEx) {
+                        log.error("보상 로직 실행 중 오류 발생: ", compensationEx);
+                        throw compensationEx; // 또는 적절한 처리
+                    }
+                    tx.markSucceeded(job.getId());
+                }
+                return;
+            }
 
-            tx.markSucceeded(job.getId());
+            // 예외: 보상 단계
+            case COMPENSATE_REQUIRED -> {
+                try {
+                    log.info("보상 단계 실행 중..");
+                    payMoneyService.compensateWithdrawal(job.getIntentId());
+                    log.info("은행 입금(보상)이 완료되었습니다.");
+                    tx.markSucceeded(job.getId());
+                } catch (RuntimeException e) {
+                    log.error("보상(재입금) 실패 intentId={}", job.getIntentId(), e);
+                    tx.markFailed(job.getId());
+                }
+                return;
+            }
         }
     }
 
@@ -96,70 +111,52 @@ public class OutboxWorker {
                 .orElseThrow(() -> new IllegalArgumentException("RefundIntent missing: " + job.getIntentId()));
 
         switch (intent.getStatus()) {
-            // 이미 완료된 refund 작업
-            case REFUND_FINISHED -> {
+            // 이미 종료된 상태
+            case FAILED, REFUND_FINISHED -> {
                 tx.markSucceeded(job.getId());
                 return;
             }
 
-            // 선차감 금액 환불 필요
-            case COMPENSATE_REQUIRED -> {
-                payMoneyService.compensateDebit(job.getIntentId());
-                tx.markSucceeded(job.getId());
-                return;
-            }
-
-            // 은행 차감 성공, 이후 내부 최종 확정만 필요
-            case REFUND_CONFIRMED -> {
-                payMoneyService.confirmDebit(job.getIntentId());
-                tx.markSucceeded(job.getId());
-                return;
-            }
-
-            // 보상이 필요 없는 실패. 사용자가 다시 요청을 보내야함.
-            case FAILED -> {
-                tx.markSucceeded(job.getId());
-                return;
-            }
-
-            // 최신 상태 반영하기
+            // 1단계: 페이머니 금액 선차감
             case INIT -> {
-                payMoneyService.subtractAmount(job.getIntentId());
-                intent = refundIntentRepository.findById(job.getIntentId())
-                        .orElseThrow(() -> new IllegalArgumentException("RefundIntent missing: " + job.getIntentId()));
-            }
-            case PRE_DEBIT -> {
-                log.info("Refund PRE_DEBIT: will try deposit and then confirm. intentId={}", job.getIntentId());
-                // 바로 아래 try 블록 입금 시도 진행
-            }
-            default -> {
-                log.warn("존재하지 않는 상태입니다.. type={}, jobId={}, status={}",
-                        job.getType(), job.getId(), intent.getStatus());
-                tx.markSucceeded(job.getId());
+                try {
+                    payMoneyService.subtractAmount(job.getIntentId());
+                    tx.enqueue(job.getIntentId(), Outbox.OutboxType.BANK_DEPOSIT);
+                    tx.markSucceeded(job.getId());
+                } catch (RuntimeException e) {
+                    log.error("페이머니 선 차감에 실패했습니다. intentId={}", job.getIntentId(), e);
+                    tx.markFailed(job.getId());
+                }
                 return;
             }
-        }
-        try {
-            // PRE_DEBIT 일 때만 입금 시도
-            if (intent.getStatus() == RefundIntent.RefundStatus.PRE_DEBIT) {
-                payMoneyService.processRefundDeposit(job.getIntentId());
+
+            // 2단계: 은행 입금 시도
+            case PRE_DEBIT -> {
+                try {
+                    payMoneyService.processRefundDeposit(job.getIntentId());
+                    tx.markSucceeded(job.getId());
+                } catch (RuntimeException e) {
+                    log.error("은행 입금에 실패했습니다.  intentId={}", job.getIntentId(), e);
+                    payMoneyService.markRefundCompensateRequired(job.getIntentId());
+                    tx.enqueue(job.getIntentId(), Outbox.OutboxType.BANK_DEPOSIT);
+                    tx.markSucceeded(job.getId());
+                }
+                return;
             }
 
-            RefundIntent after = refundIntentRepository.findById(job.getIntentId())
-                    .orElseThrow(() -> new IllegalArgumentException("RefundIntent missing: " + job.getIntentId()));
-
-            switch (after.getStatus()) {
-                case REFUND_CONFIRMED -> { payMoneyService.confirmDebit(job.getIntentId()); tx.markSucceeded(job.getId()); }
-                case COMPENSATE_REQUIRED -> { payMoneyService.compensateDebit(job.getIntentId()); tx.markSucceeded(job.getId()); }
-                default -> { tx.markSucceeded(job.getId()); }
+            // 예외: 보상 단계 - 선차감 금액 환불
+            case COMPENSATE_REQUIRED -> {
+                try {
+                    log.info("보상 단계 실행 중..");
+                    payMoneyService.compensateDebit(job.getIntentId());
+                    log.info("페이머니 충전(보상)이 완료되었습니다.");
+                    tx.markSucceeded(job.getId());
+                } catch (RuntimeException e) {
+                    log.error("페이머니 충전(보상)에 실패했습니다. intentId={} ", job.getIntentId(), e);
+                    tx.markFailed(job.getId());
+                }
+                return;
             }
-        } catch (RuntimeException e) {
-            intent = refundIntentRepository.findById(job.getIntentId())
-                    .orElseThrow(() -> new IllegalArgumentException("RefundIntent missing: " + job.getIntentId()));
-            intent.markCompensateRequired();
-            refundIntentRepository.save(intent);
-            payMoneyService.compensateDebit(job.getIntentId());
-            tx.markSucceeded(job.getId());
         }
     }
 }

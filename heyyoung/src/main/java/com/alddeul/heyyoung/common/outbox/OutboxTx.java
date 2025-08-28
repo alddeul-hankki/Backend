@@ -27,9 +27,22 @@ public class OutboxTx {
     }
 
     @Transactional
+    public void enqueue(Long intentId, Outbox.OutboxType type) {
+        Outbox job = Outbox.ready(intentId, type);
+        outboxRepository.save(job);
+    }
+
+    @Transactional
     public void markSucceeded(Long jobId) {
         Outbox job = outboxRepository.findById(jobId)
                 .orElseThrow(() -> new IllegalArgumentException("Outbox missing: " + jobId));
         job.markDone();
+    }
+
+    @Transactional
+    public void markFailed(Long jobId) {
+        Outbox job = outboxRepository.findById(jobId)
+                .orElseThrow(() -> new IllegalArgumentException("Outbox missing: " + jobId));
+        job.markFailed();
     }
 }

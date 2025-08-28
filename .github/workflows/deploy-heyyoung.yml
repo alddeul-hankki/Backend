@@ -44,9 +44,7 @@ jobs:
 
       # build Docker image
       - name: docker image build
-        run: |
-          cd heyyoung
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.HEY_IMAGENAME }} .
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.HEY_IMAGENAME }} ./heyyoung
 
       # push docker image
       - name: docker Hub push

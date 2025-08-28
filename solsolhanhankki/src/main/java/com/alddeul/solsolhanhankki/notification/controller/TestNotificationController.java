@@ -30,8 +30,8 @@ public class TestNotificationController {
             // 테스트 알림 이벤트 생성
             NotificationEventDto notification = new NotificationEventDto(
                 userId,
-                "테스트 알림",
-                "이것은 테스트 알림입니다!",
+                "권수현 바보라 알림",
+                "권수현 바보!",
                 NotificationEventType.FCM_NOTIFICATION_SEND,
                 OffsetDateTime.now()
             );

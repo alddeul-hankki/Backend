@@ -2,6 +2,7 @@ package com.alddeul.solsolhanhankki.outbox.service;
 
 import java.util.List;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.alddeul.solsolhanhankki.outbox.domain.OutboxEvent;
@@ -20,6 +21,7 @@ public class OutboxProcessor {
     private final EventHandlerManager eventHandlerManager;
 
     @Transactional
+    @Scheduled(fixedDelay = 1000)
     public void processUnsentEvents() {
         List<OutboxEvent> events = outboxEventRepository.findByProcessedFalse();
 

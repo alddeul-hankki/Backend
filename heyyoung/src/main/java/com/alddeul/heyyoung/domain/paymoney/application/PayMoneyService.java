@@ -44,6 +44,25 @@ public class PayMoneyService {
     private final UserFacade userFacade;
 
     @Transactional
+    public PayMoneyCreateResponse createPayMoney(PayMoneyCreateRequest payMoneyCreateRequest) {
+        final String email = payMoneyCreateRequest.email();
+        SolUser user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다: " + email));
+        // 2. PayMoney 중복 확인
+        if (payMoneyRepository.existsByUser(user)) {
+            return PayMoneyCreateResponse.of(
+                    PayMoneyCreateResponse.Status.ALREADY_CREATED,
+                    "이미 생성된 지갑이 있습니다."
+            );
+        }
+
+        PayMoney payMoney = PayMoney.create(user);
+        payMoneyRepository.save(payMoney);
+
+        return PayMoneyCreateResponse.of(PayMoneyCreateResponse.Status.CREATED, "생성되었습니다.");
+    }
+
+    @Transactional
     public PayMoneyInquiryResponse inquiryPayMoney(PayMoneyInquiryRequest payMoneyInquiryRequest) {
         final String email = payMoneyInquiryRequest.email();
         if (email == null || email.isEmpty()) {

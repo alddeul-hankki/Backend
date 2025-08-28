@@ -8,6 +8,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   web:
     client:
       connect-timeout: 5000
@@ -30,4 +31,4 @@ firebase:
   service:
     account:
       key:
-        path: ${FIREBASE_SERVICE_ACCOUNT}
+        path: ${FIREBASE_SERVICE_ACCOUNT:src/main/resources/fire-servcie-account.json}

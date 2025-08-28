@@ -3,6 +3,7 @@ package com.alddeul.heyyoung.domain.account.external.deposit.adapter;
 import com.alddeul.heyyoung.common.api.external.dto.FinanceApiResponse;
 import com.alddeul.heyyoung.domain.account.external.deposit.FinanceAccountClient;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.DepositAccountResponse;
+import com.alddeul.heyyoung.domain.account.external.deposit.dto.InquireAccountBalanceResponse;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.WithdrawalAccountResponse;
 import com.alddeul.heyyoung.domain.account.external.deposit.port.AccountDepositPort;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,11 @@ import org.springframework.stereotype.Service;
 public class AccountDepositAdapter implements AccountDepositPort {
     private final FinanceAccountClient accountClient;
 
+    @Override
+    public FinanceApiResponse<InquireAccountBalanceResponse> inquireAccountBalance(String userKey, String accountNo) {
+        return accountClient.inquireDemandDepositAccountBalance(userKey, accountNo);
+    }
+    
     @Override
     public FinanceApiResponse<WithdrawalAccountResponse> withdraw(String userKey, String accountNo, Long amount, String summary, String instTxnNo) {
         return accountClient.withdrawDemandDepositAccount(userKey, accountNo, amount, summary, instTxnNo);

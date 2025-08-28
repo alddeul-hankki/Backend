@@ -6,10 +6,11 @@ import com.alddeul.heyyoung.common.api.external.dto.RequestHeader;
 import com.alddeul.heyyoung.common.api.external.utils.WebClientHelper;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FinanceAccountClient {
@@ -46,15 +47,22 @@ public class FinanceAccountClient {
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireTransactionHistory", request, InquireAccountHistoryResponse.class);
     }
 
+    public FinanceApiResponse<InquireAccountBalanceResponse> inquireDemandDepositAccountBalance(String userKey, String accountNo) {
+        String apiName = "inquireDemandDepositAccountBalance";
+        RequestHeader header = RequestHeader.of(apiName, appKey, userKey);
+        InquireAccountBalanceRequest request = InquireAccountBalanceRequest.of(header, accountNo);
+        return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/inquireDemandDepositAccountBalance", request, InquireAccountBalanceResponse.class);
+    }
+
     public FinanceApiResponse<WithdrawalAccountResponse> withdrawDemandDepositAccount(String userKey, String accountNo, Long transactionBalance, String transactionSummary, String instTxnNo) {
-        String apiName = "withdrawDemandDepositAccount";
+        String apiName = "updateDemandDepositAccountWithdrawal";
         RequestHeader header = RequestHeader.of(apiName, appKey, userKey, instTxnNo);
         WithdrawalAccountRequest request = WithdrawalAccountRequest.of(header, accountNo, transactionBalance, transactionSummary);
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/updateDemandDepositAccountWithdrawal", request, WithdrawalAccountResponse.class);
     }
 
     public FinanceApiResponse<DepositAccountResponse> depositDemandDepositAccount(String userKey, String accountNo, Long transactionBalance, String transactionSummary, String instTxnNo) {
-        String apiName = "depositDemandDepositAccount";
+        String apiName = "updateDemandDepositAccountDeposit";
         RequestHeader header = RequestHeader.of(apiName, appKey, userKey, instTxnNo);
         DepositAccountRequest request = DepositAccountRequest.of(header, accountNo, transactionBalance, transactionSummary);
         return webClientHelper.postRequest(url + "/api/v1/edu/demandDeposit/updateDemandDepositAccountDeposit", request, DepositAccountResponse.class);

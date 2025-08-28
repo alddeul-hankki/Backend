@@ -13,7 +13,9 @@ import com.alddeul.heyyoung.domain.paymoney.model.entity.TopUpIntent;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.PayMoneyRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.RefundIntentRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.TopUpIntentRepository;
+import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyInquiryRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyTransactionRequest;
+import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyInquiryResponse;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyTransactionResponse;
 import com.alddeul.heyyoung.domain.user.application.UserFacade;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,22 @@ public class PayMoneyService {
     private final TopUpIntentRepository topUpIntentRepository;
     private final RefundIntentRepository refundIntentRepository;
     private final UserFacade userFacade;
+
+    @Transactional
+    public PayMoneyInquiryResponse inquiryPayMoney(PayMoneyInquiryRequest payMoneyInquiryRequest) {
+        final String email = payMoneyInquiryRequest.email();
+        if (email == null || email.isEmpty()) {
+            return PayMoneyInquiryResponse.of(PayMoneyInquiryResponse.Status.FAILED, null);
+        }
+
+        PayMoney payMoney = payMoneyRepository
+                .findByUserEmail(email)
+                .orElseThrow(() -> new IllegalStateException("PayMoney not found for user: " + email));
+
+        Long amount = payMoney.getAmount();
+
+        return PayMoneyInquiryResponse.of(PayMoneyInquiryResponse.Status.SUCCESS, amount);
+    }
 
     @Transactional
     public PayMoneyTransactionResponse requestTopUpPayMoney(PayMoneyTransactionRequest payMoneyTransactionRequest) {

@@ -9,3 +9,19 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+
+firebase:
+  service:
+    account:
+      key:
+        path: ${FIREBASE_SERVICE_ACCOUNT_PATH}
+
+ddangyo:
+  api:
+    url: ${PROD_DDANGYO_API_URL}
+
+payment:
+  api:
+    url: ${PROD_PAYMENT_API_URL}
+  callback:
+    url: ${PROD_PAYMENT_CALLBACK_URL}

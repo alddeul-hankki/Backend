@@ -13,6 +13,6 @@ public class OrderPreviewResponse {
     private List<OrderItemResponse> orderItems;
     private Long menuTotalPrice;
     private Long originalDeliveryFee;
-    private Long expectedDiscountedDeliveryFee; 
+    private Long expectedDiscountedDeliveryFee;
     private Long paymentAmount;
 }

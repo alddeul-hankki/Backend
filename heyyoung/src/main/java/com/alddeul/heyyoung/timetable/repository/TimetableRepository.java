@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.alddeul.heyyoung.timetable.domain.Timetable;
 
 public interface TimetableRepository extends JpaRepository<Timetable, Long>{
-	List<Timetable> findByUser_Id(Long userId);
+	List<Timetable> findByUserId(Long userId);
 }

@@ -13,8 +13,8 @@ spring:
         format_sql: true
 logging:
   level:
-    root: INFO
-    org.springframework.web: INFO
+    root: info
+    org.springframework.web: info
 financial:
   api:
     base-url: ${FINANCIAL_BASE_URL}

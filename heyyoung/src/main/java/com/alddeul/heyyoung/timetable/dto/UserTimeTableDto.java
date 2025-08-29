@@ -5,7 +5,7 @@ import java.util.List;
 public class UserTimeTableDto {
 
     public static record Response(
-            int userId,
+    		long userId,
             List<LectureDto> lectures
     ) {}
 

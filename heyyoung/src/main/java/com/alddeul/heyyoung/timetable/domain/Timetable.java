@@ -1,7 +1,8 @@
-package com.alddeul.heyyoung.domain.timetable.model.entity;
+package com.alddeul.heyyoung.timetable.domain;
 
 import com.alddeul.heyyoung.common.jpa.base.entity.BaseIdentityEntity;
 import com.alddeul.heyyoung.domain.user.model.entity.SolUser;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

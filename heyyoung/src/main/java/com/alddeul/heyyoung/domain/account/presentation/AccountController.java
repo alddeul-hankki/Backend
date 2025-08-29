@@ -20,9 +20,9 @@ public class AccountController {
     private final AccountService accountService;
 
     @GetMapping()
-    public ResponseEntity<List<AccountSummaryResponse>> getAccounts(@RequestParam String email) {
+    public ApiResponse<List<AccountSummaryResponse>> getAccounts(@RequestParam String email) {
         var response = accountService.getAccounts(email);
-        return ResponseEntity.ok().body(response);
+        return ApiResponse.ok(response);
     }
 
     @PostMapping()

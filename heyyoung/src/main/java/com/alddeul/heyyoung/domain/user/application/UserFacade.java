@@ -21,4 +21,10 @@ public class UserFacade {
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
         return user;
     }
+
+    public SolUser getUserById(Long userId) {
+        SolUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+        return user;
+    }
 }

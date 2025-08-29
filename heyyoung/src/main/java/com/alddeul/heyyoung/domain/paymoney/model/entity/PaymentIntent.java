@@ -29,6 +29,12 @@ public class PaymentIntent extends BaseIdentityEntity {
     @Column(name = "amount", nullable = false)
     private long amount;
 
+    private String summary;
+
+    private String accountNumber;
+
+    private String redirectUrl;
+
     // 상태 머신
     public enum State {
         REQUIRES_HOLD,
@@ -44,10 +50,19 @@ public class PaymentIntent extends BaseIdentityEntity {
     @Column(nullable = false, length = 24)
     private State state = State.REQUIRES_HOLD;
 
-    @Version
-    @Column(nullable = false)
-    private long version;
-
     @Column(name = "idempotency_key", nullable = false, length = 128)
     private String idempotencyKey;
+
+    private PaymentIntent(SolUser user, long amount, String summary, String idempotencyKey, String accountNumber, String redirectUrl) {
+        this.user = user;
+        this.amount = amount;
+        this.summary = summary;
+        this.idempotencyKey = idempotencyKey;
+        this.accountNumber = accountNumber;
+        this.redirectUrl = redirectUrl;
+    }
+
+    public static PaymentIntent of(SolUser user, long amount, String summary, String idempotencyKey, String accountNumber, String redirectUrl) {
+        return  new PaymentIntent(user, amount, summary, idempotencyKey, accountNumber, redirectUrl);
+    }
 }

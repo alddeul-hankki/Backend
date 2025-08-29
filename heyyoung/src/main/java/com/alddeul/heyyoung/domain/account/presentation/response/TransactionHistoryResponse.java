@@ -10,20 +10,17 @@ public record TransactionHistoryResponse(
         String accountNumber,
         Long balance,
         Long afterBalance,
-        String summary,
-        String memo
-
+        String summary
 ) {
     public static TransactionHistoryResponse from(InquireAccountHistoryListResponse.Rec.Detail response) {
         return new TransactionHistoryResponse(
-                response.getTransactionDate(),
-                response.getTransactionTime(),
-                response.getTransactionTypeName(),
-                response.getTransactionAccountNo(),
-                response.getTransactionBalance(),
-                response.getTransactionAfterBalance(),
-                response.getTransactionSummary(),
-                response.getTransactionMemo()
+                response.transactionDate(),
+                response.transactionTime(),
+                response.transactionTypeName(),
+                response.transactionAccountNo(),
+                response.transactionBalance(),
+                response.transactionAfterBalance(),
+                response.transactionSummary()
         );
     }
 }

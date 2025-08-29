@@ -2,14 +2,14 @@ package com.alddeul.solsolhanhankki.order.presentation.response;
 
 import com.alddeul.solsolhanhankki.order.model.entity.Orders;
 import lombok.Builder;
-import lombok.Getter;
 
-@Getter
 @Builder
-public class OrderConfirmationResponse {
-    private Long orderId;
-    private String storeName;
-    private Long paymentAmount;
+public record OrderConfirmationResponse(
+        Long orderId,
+        String storeName,
+        Long paymentAmount
+) {
+
 
     public static OrderConfirmationResponse from(Orders order) {
         return OrderConfirmationResponse.builder()

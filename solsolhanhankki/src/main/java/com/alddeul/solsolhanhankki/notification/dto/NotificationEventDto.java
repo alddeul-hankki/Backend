@@ -8,6 +8,7 @@ public record NotificationEventDto(
 		long userId,
 		String title,
 		String body,
+		String url,
 		NotificationEventType type,
 		OffsetDateTime timestamp
 		) {}

@@ -76,40 +76,19 @@ public class OrderService {
                 .initialDeliveryFee(calcResult.deliveryFeeToSend)
                 .build());
 
-        List<OrderItems> orderItems = request.orderItems().stream()
-                .map(itemRequest -> OrderItems.from(order, itemRequest))
-                .collect(Collectors.toList());
+        List<OrderItems> orderItems = OrderItems.from(order, request.orderItems());
         orderItemRepository.saveAll(orderItems);
 
         Groups lockedGroup = groupRepository.findByIdWithPessimisticLock(calcResult.group.getId())
                 .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다. ID: " + calcResult.group.getId()));
         lockedGroup.addParticipant(calcResult.menuTotalPrice);
 
-        StringBuilder summaryBuilder = new StringBuilder();
-
-        String storeName = request.storeName();
-
-        summaryBuilder.append(storeName);
-
-        int menuLength = request.orderItems().size();
-
-        String menuName = request.orderItems().getFirst().menuName();
-
-        summaryBuilder.append(menuName);
-
-        if(menuLength >=2 ) {
-            summaryBuilder.append(" 외 ");
-            summaryBuilder.append(menuLength - 1 + "건");
-        }
-
-        PaymentRequest paymentRequest = PaymentRequest.builder()
-                .userId(userId)
-                .orderId(order.getId())
-                .amount(calcResult.paymentAmount)
-                .redirectURI(callbackUrl)
-                .summary(summaryBuilder.toString())
-                .paymentType(PaymentRequest.PaymentType.HOLD)
-                .build();
+        PaymentRequest paymentRequest = PaymentRequest.of(
+                order,
+                request.storeName(),
+                callbackUrl,
+                calcResult.paymentAmount
+        );
 
         boolean paymentSuccess = paymentPort.requestPayment(paymentRequest);
         if (!paymentSuccess) {

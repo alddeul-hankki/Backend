@@ -1,7 +1,7 @@
 package com.alddeul.solsolhanhankki.order.model.entity;
 
 import com.alddeul.solsolhanhankki.common.jpa.base.entity.BaseIdentityEntity;
-import com.alddeul.solsolhanhankki.order.presentation.request.OrderItemRequest; // import 추가
+import com.alddeul.solsolhanhankki.order.presentation.request.OrderItemRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -9,6 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "order_items")
@@ -55,5 +58,11 @@ public class OrderItems extends BaseIdentityEntity {
                 .pricePerItem(request.pricePerItem())
                 .quantity(request.quantity())
                 .build();
+    }
+
+    public static List<OrderItems> from(Orders order, List<OrderItemRequest> requests) {
+        return requests.stream()
+                .map(request -> from(order, request))
+                .collect(Collectors.toList());
     }
 }

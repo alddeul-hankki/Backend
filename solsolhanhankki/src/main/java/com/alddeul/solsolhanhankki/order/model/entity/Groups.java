@@ -30,6 +30,12 @@ public class Groups extends BaseIdentityEntity {
     private GroupStatus status = GroupStatus.RECRUITING;
 
     @Column(nullable = false)
+    private OffsetDateTime scheduledDeadlineAt;
+
+    @Column(nullable = false)
+    private OffsetDateTime scheduledPickupAt;
+
+    @Column(nullable = false)
     private String storeId;
 
     @Column(nullable = false)
@@ -70,6 +76,8 @@ public class Groups extends BaseIdentityEntity {
         this.minOrderPrice = minOrderPrice;
         this.deliveryFeePolicies = deliveryFeePolicies;
         this.triggerPrice = triggerPrice;
+        this.scheduledDeadlineAt = scheduledDeadlineAt;
+        this.scheduledPickupAt = scheduledPickupAt;
         this.deadlineAt = deadlineAt;
         this.pickupAt = pickupAt;
     }

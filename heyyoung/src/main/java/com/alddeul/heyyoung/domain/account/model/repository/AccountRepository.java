@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findByAccountNumberIn(List<String> accountNumbers);
+
+    List<Account> findBySolUserId(Long solUserId);
+
+    Account findByAccountNumber(String accountNumber);
 }

@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/fcm")
+@RequestMapping("/sol/api/fcm")
 @CrossOrigin(origins = {"http://localhost:4173"})
 public class FcmTokenController {
 	private final FcmTokenService fcmTokenService;

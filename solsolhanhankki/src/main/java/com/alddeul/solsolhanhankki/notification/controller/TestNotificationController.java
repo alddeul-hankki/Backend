@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/sol/api/test")
 @RequiredArgsConstructor
 public class TestNotificationController {
 

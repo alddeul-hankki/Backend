@@ -9,6 +9,8 @@ public class PaymentRequest {
     private Long userId;
     private Long orderId;
     private Long amount;
+    private String redirectURI;
+    private String summary;
     private PaymentType paymentType; // HOLD 또는 CAPTURE
 
     public enum PaymentType {

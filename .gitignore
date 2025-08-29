@@ -74,5 +74,5 @@ HELP.md
 # secret variable
 # =========================
 .env
-src/main/resources/firebase-service-account.json
+solsolhanhankki/src/main/resources/firebase-service-account.json
 

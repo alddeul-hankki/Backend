@@ -9,7 +9,7 @@ name: Hey Young Deploy dev branch
 
 on:
   push:
-    branches: [ "deploy" ]
+    branches: [ "develop" ]
 
 
 jobs:

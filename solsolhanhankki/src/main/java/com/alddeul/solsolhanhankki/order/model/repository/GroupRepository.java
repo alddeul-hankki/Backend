@@ -25,4 +25,7 @@ public interface GroupRepository extends JpaRepository<Groups, Long> {
     Optional<Groups> findAvailableGroupBy(String storeId, Long pickupZoneId, OffsetDateTime deadlineAt);
 
     List<Groups> findAllByStatusAndTriggeredAtBefore(GroupStatus status, OffsetDateTime threshold);
+
+    List<Groups> findAllByStatusInAndPickupZone_Campus_Id(List<GroupStatus> statuses, Long campusId);
+
 }

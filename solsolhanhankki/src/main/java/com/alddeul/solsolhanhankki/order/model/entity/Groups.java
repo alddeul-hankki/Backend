@@ -126,11 +126,6 @@ public class Groups extends BaseIdentityEntity {
         this.participantCount++;
     }
 
-    public void trigger() {
-        this.status = GroupStatus.TRIGGERED;
-        this.triggeredAt = OffsetDateTime.now();
-    }
-
     public void removeParticipant(Long menuTotalPrice) {
         this.currentTotalPrice -= menuTotalPrice;
         this.participantCount--;
@@ -153,5 +148,15 @@ public class Groups extends BaseIdentityEntity {
 
     public void cancel() {
         this.status = GroupStatus.CANCELED;
+    }
+
+    public boolean isTriggered() {
+        return this.currentTotalPrice >= this.triggerPrice;
+    }
+
+    public void trigger() {
+        this.status = GroupStatus.TRIGGERED;
+        this.triggeredAt = OffsetDateTime.now(); // 트리거된 시간 기록
+        this.deadlineAt = OffsetDateTime.now().plusMinutes(5); // 마감 시간을 '지금으로부터 5분 뒤'로 변경
     }
 }

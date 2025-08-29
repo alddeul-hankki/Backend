@@ -15,4 +15,7 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     List<Orders> findAllByGroupId(Long groupId);
 
     Optional<Orders> findByIdAndUserId(Long orderId, Long userId);
+
+    Optional<Orders> findByPaymentToken(String paymentToken);
+
 }

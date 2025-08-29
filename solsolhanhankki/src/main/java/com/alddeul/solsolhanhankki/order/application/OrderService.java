@@ -13,6 +13,7 @@ import com.alddeul.solsolhanhankki.order.model.enums.GroupStatus;
 import com.alddeul.solsolhanhankki.order.model.repository.GroupRepository;
 import com.alddeul.solsolhanhankki.order.model.repository.OrderItemRepository;
 import com.alddeul.solsolhanhankki.order.model.repository.OrderRepository;
+import com.alddeul.solsolhanhankki.order.presentation.request.CancelRequest;
 import com.alddeul.solsolhanhankki.order.presentation.request.OrderItemRequest;
 import com.alddeul.solsolhanhankki.order.presentation.request.OrderPreviewRequest;
 import com.alddeul.solsolhanhankki.order.presentation.request.OrderRequest;
@@ -21,6 +22,7 @@ import com.alddeul.solsolhanhankki.order.presentation.response.OrderItemResponse
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderPreviewResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,9 +41,11 @@ public class OrderService {
     private final RestaurantClient restaurantClient;
     private final PaymentPort paymentPort;
 
+    @Value("${payment.callback.url}")
+    private String callbackUrl;
+
     @Transactional(readOnly = true)
     public OrderPreviewResponse getOrderDetailForPreview(OrderPreviewRequest request) {
-        // 공통 계산 로직 호출
         OrderCalculationResult result = calculateOrderDetails(
                 request.storeId(), request.pickupZoneId(), request.deadlineAt(), request.orderItems()
         );
@@ -81,10 +85,29 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다. ID: " + calcResult.group.getId()));
         lockedGroup.addParticipant(calcResult.menuTotalPrice);
 
+        StringBuilder summaryBuilder = new StringBuilder();
+
+        String storeName = request.storeName();
+
+        summaryBuilder.append(storeName);
+
+        int menuLength = request.orderItems().size();
+
+        String menuName = request.orderItems().getFirst().menuName();
+
+        summaryBuilder.append(menuName);
+
+        if(menuLength >=2 ) {
+            summaryBuilder.append(" 외 ");
+            summaryBuilder.append(menuLength - 1 + "건");
+        }
+
         PaymentRequest paymentRequest = PaymentRequest.builder()
                 .userId(userId)
                 .orderId(order.getId())
                 .amount(calcResult.paymentAmount)
+                .redirectURI(callbackUrl)
+                .summary(summaryBuilder.toString())
                 .paymentType(PaymentRequest.PaymentType.HOLD)
                 .build();
 
@@ -142,8 +165,8 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrder(Long orderId, Long userId) {
-        Orders order = orderRepository.findByIdAndUserId(orderId, userId)
+    public void cancelOrder(CancelRequest request) {
+        Orders order = orderRepository.findByIdAndUserId(request.orderId(), request.userId())
                 .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없거나 취소 권한이 없습니다."));
 
         Groups group = order.getGroup();
@@ -166,5 +189,21 @@ public class OrderService {
         if (lockedGroup.getParticipantCount() == 0) {
             lockedGroup.cancel();
         }
+    }
+
+    @Transactional
+    public String processPaymentCallback(Long orderId) {
+        Orders order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다. ID: " + orderId));
+
+        return order.getPaymentToken();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderConfirmationResponse getOrderByPaymentToken(String paymentToken) {
+        Orders order = orderRepository.findByPaymentToken(paymentToken)
+                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 접근입니다."));
+
+        return OrderConfirmationResponse.from(order);
     }
 }

@@ -1,6 +1,6 @@
 package com.alddeul.heyyoung.domain.account.external.deposit.dto;
 
- import com.alddeul.heyyoung.common.api.external.dto.ResponseHeader;
+import com.alddeul.heyyoung.common.api.external.dto.ResponseHeader;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

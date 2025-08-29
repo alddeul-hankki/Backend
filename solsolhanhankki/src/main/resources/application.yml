@@ -8,6 +8,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   web:
     client:
       connect-timeout: 5000
@@ -20,14 +21,19 @@ logging:
 
 financial:
   api:
-    base-url: ${FINANCIAL_BASE_URL}
-    key: ${FINANCIAL_API_KEY}
+    base-url: ${FINANCIAL_BASE_URL:https://example.com}
+    key: ${FINANCIAL_API_KEY:1234}
     name: 쏠쏠한한끼
     default:
-      account-type: ${FINANCIAL_DEFAULT_ACCOUNT_TYPE}			
+      account-type: ${FINANCIAL_DEFAULT_ACCOUNT_TYPE}
+
+rest:
+  template:
+    connection-timeout: 5000
+    read-timeout: 5000
 
 firebase:
   service:
     account:
       key:
-        path: ${FIREBASE_SERVICE_ACCOUNT}
+        path: ${FIREBASE_SERVICE_ACCOUNT:src/main/resources/firebase-service-account.json}

@@ -1,4 +1,4 @@
-package com.alddeul.heyyoung.global.config;
+package com.alddeul.heyyoung.common.config;
 
 
 import org.springframework.context.annotation.Configuration;
@@ -11,11 +11,11 @@ public class CorsMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")               
+                .allowedOrigins("http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
-//				.allowCredentials(true)
-//              .exposedHeaders("Set-Cookie", "Authorization")
+                .allowCredentials(true)
+//                .exposedHeaders("Set-Cookie", "Authorization")
                 .maxAge(3600);
     }
 }

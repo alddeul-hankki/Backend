@@ -44,7 +44,7 @@ public class PaymentService {
         paymentIntentService.save(paymentIntent);
 
         return UriComponentsBuilder
-                .fromUriString("http://localhost:5173/payment")
+                .fromUriString("http://localhost:4173/payment")
                 .queryParam("token", token)
                 .build().toUriString();
     }

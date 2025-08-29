@@ -30,7 +30,7 @@ public class SolUser extends BaseIdentityEntity {
 
 
     public void registerUserAtBank(String accessKey) {
-        if (accessKey != null) {
+        if (this.accessKey != null) {
             throw new IllegalStateException("이미 은행에 등록된 사용자입니다.");
         }
         this.accessKey = accessKey;

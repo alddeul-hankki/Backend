@@ -21,11 +21,16 @@ logging:
 
 financial:
   api:
-    base-url: ${FINANCIAL_BASE_URL}
-    key: ${FINANCIAL_API_KEY}
+    base-url: ${FINANCIAL_BASE_URL:https://example.com}
+    key: ${FINANCIAL_API_KEY:1234}
     name: 쏠쏠한한끼
     default:
-      account-type: ${FINANCIAL_DEFAULT_ACCOUNT_TYPE}			
+      account-type: ${FINANCIAL_DEFAULT_ACCOUNT_TYPE}
+
+rest:
+  template:
+    connection-timeout: 5000
+    read-timeout: 5000
 
 firebase:
   service:

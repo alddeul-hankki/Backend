@@ -14,7 +14,9 @@ import java.util.Comparator;
 import java.util.List;
 
 @Entity
-@Table(name = "groups")
+@Table(name = "groups", indexes = {
+        @Index(name = "idx_status_triggered_at", columnList = "status, triggeredAt")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Groups extends BaseIdentityEntity {

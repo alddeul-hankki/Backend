@@ -83,6 +83,10 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다. ID: " + calcResult.group.getId()));
         lockedGroup.addParticipant(calcResult.menuTotalPrice);
 
+        if (lockedGroup.getStatus() == GroupStatus.RECRUITING && lockedGroup.isTriggered()) {
+            lockedGroup.trigger(); // 상태를 TRIGGERED로 바꾸고 deadlineAt을 5분 뒤로 변경
+        }
+
         PaymentRequest paymentRequest = PaymentRequest.of(
                 order,
                 request.storeName(),

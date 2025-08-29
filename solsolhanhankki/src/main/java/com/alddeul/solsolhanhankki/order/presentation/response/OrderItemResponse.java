@@ -2,15 +2,15 @@ package com.alddeul.solsolhanhankki.order.presentation.response;
 
 import com.alddeul.solsolhanhankki.order.presentation.request.OrderItemRequest;
 import lombok.Builder;
-import lombok.Getter;
 
-@Getter
 @Builder
-public class OrderItemResponse {
-    private String menuName;
-    private Integer quantity;
-    private Long pricePerItem;
-    private String options;
+public record OrderItemResponse(
+        String menuName,
+        Integer quantity,
+        Long pricePerItem,
+        String options
+) {
+
 
     public static OrderItemResponse from(OrderItemRequest item) {
         return OrderItemResponse.builder()

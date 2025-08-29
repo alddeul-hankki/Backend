@@ -34,7 +34,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderConfirmationResponse> createOrder(@RequestBody OrderRequest orderRequest) {
         OrderConfirmationResponse response = orderService.createOrder(orderRequest);
-        return ResponseEntity.created(URI.create("/api/orders/" + response.getOrderId())).body(response);
+        return ResponseEntity.created(URI.create("/api/orders/" + response.orderId())).body(response);
     }
 
     @PostMapping("/cancel")

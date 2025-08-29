@@ -19,3 +19,13 @@ firebase:
 ddangyo:
   api:
     url: ${DEV_DDANGYO_API_URL}
+
+solsol:
+  client:
+    url: ${SOLSOL_CLIENT_URL}
+
+payment:
+  api:
+    url: ${DEV_PAYMENT_API_URL}
+  callback:
+    url: ${DEV_PAYMENT_CALLBACK_URL}

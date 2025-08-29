@@ -19,3 +19,9 @@ firebase:
 ddangyo:
   api:
     url: ${PROD_DDANGYO_API_URL}
+
+payment:
+  api:
+    url: ${PROD_PAYMENT_API_URL}
+  callback:
+    url: ${PROD_PAYMENT_CALLBACK_URL}

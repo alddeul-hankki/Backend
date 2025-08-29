@@ -8,7 +8,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -39,6 +41,9 @@ public class Orders extends BaseIdentityEntity {
     private Long finalDeliveryFee;
     private Long refundAmount;
 
+    @Column(nullable = false, unique = true)
+    private String paymentToken;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RefundStatus refundStatus = RefundStatus.NONE;
@@ -65,4 +70,11 @@ public class Orders extends BaseIdentityEntity {
     public void cancel() {
         this.status = OrderStatus.CANCELED;
     }
+
+    // 임시 랜덤토큰 발급
+    @PrePersist
+    public void createPaymentToken() {
+        this.paymentToken = UUID.randomUUID().toString();
+    }
+    
 }

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alddeul.heyyoung.timetable.dto.TimetableLocationRequest;
+import com.alddeul.heyyoung.timetable.dto.TimetableLocationResponse;
 import com.alddeul.heyyoung.timetable.dto.UserTimeTableDto;
 import com.alddeul.heyyoung.timetable.service.TimetableService;
 
@@ -47,5 +49,18 @@ public class TimetableController {
             log.error("시간표 조회 실패", e);
             return ResponseEntity.ok(UserTimeTableDto.ListResponse.fail("시간표 조회 실패"));
         }
+    }
+    
+    @PostMapping("/users/locations")
+    public ResponseEntity<List<TimetableLocationResponse>> findLocations(
+    		@RequestBody List<TimetableLocationRequest> requests
+    ) {
+    	try {
+    	List<TimetableLocationResponse> resp = timetableService.findLocations(requests);
+    	return ResponseEntity.ok(resp);
+    	}catch(Exception e) {
+    		log.error("위치 조회 실패", e);
+    		return ResponseEntity.ok(null);
+    	}
     }
 }

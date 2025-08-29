@@ -2,6 +2,7 @@ package com.alddeul.solsolhanhankki.order.application;
 
 import com.alddeul.solsolhanhankki.campus.model.entity.PickupZone;
 import com.alddeul.solsolhanhankki.campus.model.repository.PickupZoneRepository;
+import com.alddeul.solsolhanhankki.notification.service.NotificationService;
 import com.alddeul.solsolhanhankki.order.application.dto.RestaurantInfo;
 import com.alddeul.solsolhanhankki.order.application.port.out.PaymentPort;
 import com.alddeul.solsolhanhankki.order.infra.RestaurantClient;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,13 +42,16 @@ public class OrderService {
     private final PickupZoneRepository pickupZoneRepository;
     private final RestaurantClient restaurantClient;
     private final PaymentPort paymentPort;
+    private final NotificationService notificationService;
 
     @Value("${payment.callback.url}")
     private String callbackUrl;
 
+    private record OrderCalculationResult(RestaurantInfo restaurantInfo, Groups group, long menuTotalPrice, long originalDeliveryFee, long expectedDiscountedDeliveryFee, long deliveryFeeToSend, long paymentAmount) {}
+
     @Transactional(readOnly = true)
     public OrderPreviewResponse getOrderDetailForPreview(OrderPreviewRequest request) {
-        OrderCalculationResult result = calculateOrderDetails(
+        OrderCalculationResult result = calculateOrderDetailsForPreview(
                 request.storeId(), request.pickupZoneId(), request.deadlineAt(), request.orderItems()
         );
 
@@ -62,68 +67,87 @@ public class OrderService {
 
     @Transactional
     public OrderConfirmationResponse createOrder(OrderRequest request) {
-
         Long userId = request.userId();
+        RestaurantInfo restaurantInfo = restaurantClient.getRestaurantInfo(request.storeId());
 
-        OrderCalculationResult calcResult = calculateOrderDetails(
-                request.storeId(), request.pickupZoneId(), request.deadlineAt(), request.orderItems()
-        );
+        boolean isNewGroup = false;
+        Optional<Groups> existingGroupOpt = groupRepository.findAvailableGroupBy(restaurantInfo.getStoreId(), request.pickupZoneId(), request.deadlineAt());
+
+        Groups group;
+        if (existingGroupOpt.isEmpty()) {
+            isNewGroup = true;
+            PickupZone pickupZone = pickupZoneRepository.findById(request.pickupZoneId())
+                    .orElseThrow(() -> new EntityNotFoundException("픽업존을 찾을 수 없습니다."));
+
+            group = groupRepository.save(Groups.builder()
+                    .pickupZone(pickupZone)
+                    .storeId(restaurantInfo.getStoreId())
+                    .storeName(restaurantInfo.getStoreName())
+                    .minOrderPrice(restaurantInfo.getMinOrderPrice())
+                    .deliveryFeePolicies(restaurantInfo.getDeliveryFeePolicies())
+                    .triggerPrice(restaurantInfo.getTriggerPrice())
+                    .deadlineAt(request.deadlineAt())
+                    .pickupAt(request.pickupAt())
+                    .scheduledDeadlineAt(request.deadlineAt())
+                    .scheduledPickupAt(request.pickupAt())
+                    .build());
+        } else {
+            group = existingGroupOpt.get();
+        }
+
+        long menuTotalPrice = calculateMenuTotalPrice(request.orderItems());
+        long originalDeliveryFee = restaurantInfo.calculateFee(menuTotalPrice);
+        long expectedDeliveryFee = group.calculateExpectedFee(menuTotalPrice);
+
+        long deliveryFeeToSend = (group.getStatus() == GroupStatus.RECRUITING) ? originalDeliveryFee : expectedDeliveryFee;
+        long paymentAmount = menuTotalPrice + deliveryFeeToSend;
 
         Orders order = orderRepository.save(Orders.builder()
-                .group(calcResult.group)
+                .group(group)
                 .userId(userId)
-                .menuTotalPrice(calcResult.menuTotalPrice)
-                .initialDeliveryFee(calcResult.deliveryFeeToSend)
+                .menuTotalPrice(menuTotalPrice)
+                .initialDeliveryFee(deliveryFeeToSend)
                 .build());
 
         List<OrderItems> orderItems = OrderItems.from(order, request.orderItems());
         orderItemRepository.saveAll(orderItems);
 
-        Groups lockedGroup = groupRepository.findByIdWithPessimisticLock(calcResult.group.getId())
-                .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다. ID: " + calcResult.group.getId()));
-        lockedGroup.addParticipant(calcResult.menuTotalPrice);
+        Groups lockedGroup = groupRepository.findByIdWithPessimisticLock(group.getId())
+                .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다. ID: " + group.getId()));
+        lockedGroup.addParticipant(menuTotalPrice);
 
         if (lockedGroup.getStatus() == GroupStatus.RECRUITING && lockedGroup.isTriggered()) {
-            lockedGroup.trigger(); // 상태를 TRIGGERED로 바꾸고 deadlineAt을 5분 뒤로 변경
+            lockedGroup.trigger();
         }
 
-        PaymentRequest paymentRequest = PaymentRequest.of(
-                order,
-                request.storeName(),
-                callbackUrl,
-                calcResult.paymentAmount
-        );
-
+        PaymentRequest paymentRequest = PaymentRequest.of(order, request.storeName(), callbackUrl, paymentAmount);
         boolean paymentSuccess = paymentPort.requestPayment(paymentRequest);
         if (!paymentSuccess) {
             throw new RuntimeException("결제 서버 요청에 실패했습니다.");
         }
 
+        // 새 그룹이 생성되었고, 첫 주문의 결제 요청이 성공했을 때만 알림 발송
+        if (isNewGroup) {
+            List<Long> userIdsToNotify = List.of(1L, 2L, 3L);
+            notificationService.createRecommendNotification(userIdsToNotify, group.getStoreName());
+        }
+
         return OrderConfirmationResponse.from(order);
     }
 
-    private OrderCalculationResult calculateOrderDetails(String storeId, Long pickupZoneId, OffsetDateTime deadlineAt, List<OrderItemRequest> orderItems) {
+    private OrderCalculationResult calculateOrderDetailsForPreview(String storeId, Long pickupZoneId, OffsetDateTime deadlineAt, List<OrderItemRequest> orderItems) {
         RestaurantInfo restaurantInfo = restaurantClient.getRestaurantInfo(storeId);
-
         Groups group = groupRepository.findAvailableGroupBy(storeId, pickupZoneId, deadlineAt)
                 .orElseGet(() -> createNewGroupForCalculation(restaurantInfo, pickupZoneId, deadlineAt));
 
         long menuTotalPrice = calculateMenuTotalPrice(orderItems);
         long originalDeliveryFee = restaurantInfo.calculateFee(menuTotalPrice);
         long expectedDeliveryFee = group.calculateExpectedFee(menuTotalPrice);
-
-        long deliveryFeeToSend;
-        if (group.getStatus() == GroupStatus.RECRUITING) {
-            deliveryFeeToSend = originalDeliveryFee;
-        } else {
-            deliveryFeeToSend = expectedDeliveryFee;
-        }
+        long deliveryFeeToSend = (group.getStatus() == GroupStatus.RECRUITING) ? originalDeliveryFee : expectedDeliveryFee;
         long paymentAmount = menuTotalPrice + deliveryFeeToSend;
 
         return new OrderCalculationResult(restaurantInfo, group, menuTotalPrice, originalDeliveryFee, expectedDeliveryFee, deliveryFeeToSend, paymentAmount);
     }
-
-    private record OrderCalculationResult(RestaurantInfo restaurantInfo, Groups group, long menuTotalPrice, long originalDeliveryFee, long expectedDiscountedDeliveryFee, long deliveryFeeToSend, long paymentAmount) {}
 
     private Groups createNewGroupForCalculation(RestaurantInfo restaurantInfo, Long pickupZoneId, OffsetDateTime deadlineAt) {
         PickupZone pickupZone = pickupZoneRepository.findById(pickupZoneId)
@@ -138,6 +162,8 @@ public class OrderService {
                 .triggerPrice(restaurantInfo.getTriggerPrice())
                 .deadlineAt(deadlineAt)
                 .pickupAt(deadlineAt.plusHours(1))
+                .scheduledDeadlineAt(deadlineAt)
+                .scheduledPickupAt(deadlineAt.plusHours(1))
                 .build();
     }
 
@@ -157,8 +183,7 @@ public class OrderService {
             throw new IllegalStateException("모집이 마감된 주문은 취소할 수 없습니다.");
         }
 
-         boolean cancelSuccess =  paymentPort.cancelHeldPayment(order.getId());
-
+        boolean cancelSuccess = paymentPort.cancelHeldPayment(order.getId());
         if (!cancelSuccess) {
             throw new RuntimeException("취소 요청에 실패했습니다.");
         }
@@ -178,7 +203,6 @@ public class OrderService {
     public String processPaymentCallback(Long orderId) {
         Orders order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다. ID: " + orderId));
-
         return order.getPaymentToken();
     }
 
@@ -186,7 +210,6 @@ public class OrderService {
     public OrderConfirmationResponse getOrderByPaymentToken(String paymentToken) {
         Orders order = orderRepository.findByPaymentToken(paymentToken)
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 접근입니다."));
-
         return OrderConfirmationResponse.from(order);
     }
 }

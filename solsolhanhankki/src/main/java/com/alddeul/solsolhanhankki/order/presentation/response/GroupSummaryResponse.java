@@ -25,7 +25,7 @@ public record GroupSummaryResponse(
                 group.getId(),
                 group.getStoreName(),
                 group.getStoreId(),
-                "https://dwdwaxgahvp6i.cloudfront.net/shbimg/biz/img/2022/10/c69204e3-2145-48db-82cb-6f1867666e78.jpg",
+                "https://dwdwaxgahvp6i.cloudfront.net/shbimg/biz/img/2025/03/30f785a6-5e47-45cb-82f6-aaebbb05c020.jpg",
                 group.getPickupZone().getName(),
                 group.getDeadlineAt(),
                 group.getParticipantCount(),

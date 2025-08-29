@@ -55,11 +55,17 @@ public class OrderItems extends BaseIdentityEntity {
     }
 
     public static OrderItems from(Orders order, OrderItemRequest request) {
+        String optionsJson = request.options();
+        // options 값이 null이거나 비어있으면, 유효한 빈 JSON 객체인 "{}"로 설정합니다.
+        if (optionsJson == null || optionsJson.trim().isEmpty()) {
+            optionsJson = "{}";
+        }
+
         return OrderItems.builder()
                 .order(order)
                 .menuId(request.menuId())
                 .menuName(request.menuName())
-                .options(request.options())
+                .options(optionsJson) // 안전하게 처리된 값을 사용합니다.
                 .pricePerItem(request.pricePerItem())
                 .quantity(request.quantity())
                 .build();

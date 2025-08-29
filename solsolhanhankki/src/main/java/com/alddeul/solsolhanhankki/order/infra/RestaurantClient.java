@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,11 +53,18 @@ public class RestaurantClient {
                 .mapToLong(DeliveryFeePolicy::getOrderAmountThreshold)
                 .min().orElse(0L);
 
+        Long triggerPrice = policies.stream()
+                .map(DeliveryFeePolicy::getOrderAmountThreshold)
+                .max(Comparator.naturalOrder())
+                .orElse(minOrderPrice);
+
+
         return RestaurantInfo.builder()
                 .storeId(restaurant.getId())
                 .storeName(restaurant.getName())
                 .minOrderPrice(minOrderPrice)
                 .deliveryFeePolicies(policies)
+                .triggerPrice(triggerPrice)
                 .build();
     }
 }

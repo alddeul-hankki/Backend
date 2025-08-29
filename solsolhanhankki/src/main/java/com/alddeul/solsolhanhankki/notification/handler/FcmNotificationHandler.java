@@ -29,10 +29,11 @@ public class FcmNotificationHandler implements EventHandler {
         String token = payload.get("token").asText();
         String title = payload.get("title").asText();
         String body = payload.get("body").asText();
+        String url  = payload.get("url").asText();
 
         try {
-        	
-            String messageId = sendFcmNotification(token, title, body);
+      
+            sendFcmNotification(token, title, body, url);
             log.info("FCM 알림 발송 성공: title={}, body={}",title, body);
         
         } catch (Exception e) {
@@ -48,7 +49,7 @@ public class FcmNotificationHandler implements EventHandler {
         return "FCM_NOTIFICATION_SEND";
     }
 
-    private String sendFcmNotification(String token, String title, String body) 
+    private String sendFcmNotification(String token, String title, String body, String url) 
             throws FirebaseMessagingException {
         
         Message message = Message.builder()
@@ -58,6 +59,7 @@ public class FcmNotificationHandler implements EventHandler {
                         .setBody(body)
                         .build())
                 .putData("clickAction", "OPEN_APP") // 알림 클릭 시 앱 열기
+                .putData("url", url)
                 .setWebpushConfig(
                     com.google.firebase.messaging.WebpushConfig.builder()
                         .setNotification(

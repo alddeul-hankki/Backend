@@ -32,6 +32,7 @@ public class TestNotificationController {
                 userId,
                 "테스트 알림",
                 "테스트 알립입니다.!",
+                "/solsol",
                 NotificationEventType.FCM_NOTIFICATION_SEND,
                 OffsetDateTime.now()
             );

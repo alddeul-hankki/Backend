@@ -15,4 +15,10 @@ public class UserFacade {
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
         return user.getAccessKey();
     }
+
+    public SolUser getUser(String email) {
+        SolUser user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+        return user;
+    }
 }

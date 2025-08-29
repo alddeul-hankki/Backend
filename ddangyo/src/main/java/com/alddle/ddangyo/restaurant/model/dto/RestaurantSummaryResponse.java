@@ -2,10 +2,13 @@ package com.alddle.ddangyo.restaurant.model.dto;
 
 import com.alddle.ddangyo.restaurant.model.entity.Restaurant;
 
+import java.util.List;
+
+
 public record RestaurantSummaryResponse(
         String id,
         String name,
-        int delvFee,
+        List<Restaurant.DeliveryFee> delvFees,
         String delvFeeNm,
         String patstoImageFile,
         int reCnt,

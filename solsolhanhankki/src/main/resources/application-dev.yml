@@ -1,11 +1,31 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${DEV_POSTGRES_URL}:${POSTGRES_PORT}/${DEV_POSTGRES_DB}
-    username: ${DEV_POSTGRES_USER}
-    password: ${DEV_POSTGRES_PASSWORD}
+    url: jdbc:postgresql://${DEV_POSTGRES_URL:localhost}:${POSTGRES_PORT:5432}/${DEV_POSTGRES_DB:postgres}
+    username: ${DEV_POSTGRES_USER:postgres}
+    password: ${DEV_POSTGRES_PASSWORD:1234}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+firebase:
+  service:
+    account:
+      key:
+        path: src/main/resources/firebase-service-account.json
+
+ddangyo:
+  api:
+    url: ${DEV_DDANGYO_API_URL}
+
+solsol:
+  client:
+    url: ${SOLSOL_CLIENT_URL}
+
+payment:
+  api:
+    url: ${DEV_PAYMENT_API_URL}
+  callback:
+    url: ${DEV_PAYMENT_CALLBACK_URL}

@@ -23,12 +23,15 @@ public class WebClientHelper {
                     .exchangeToMono(clientResponse -> {
                         if (clientResponse.statusCode().is2xxSuccessful()) {
                             return clientResponse.bodyToMono(responseType)
-                                    .map(FinanceApiResponse::ofData);
+                                    .map(FinanceApiResponse::ofData)
+                                    .doOnNext(resp -> log.info("[WebClient] 성공 응답: {}", resp));
                         } else if (clientResponse.statusCode().is4xxClientError()) {
                             return clientResponse.bodyToMono(ErrorResponse.class)
-                                    .map(FinanceApiResponse::<T>ofError);
+                                    .map(FinanceApiResponse::<T>ofError)
+                                    .doOnNext(err -> log.warn("[WebClient] 4xx 오류 응답: {}", err));
                         } else { // 5XX 등 서버 오류는 예외로 처리
                             return clientResponse.createException()
+                                    .doOnNext(ex -> log.error("[WebClient] 서버 오류 발생", ex))
                                     .flatMap(Mono::error);
                         }
                     })

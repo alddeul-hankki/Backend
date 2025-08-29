@@ -17,34 +17,33 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/sol/api/test")
 @RequiredArgsConstructor
 public class TestNotificationController {
 
     private final NotificationService notificationService;
     private final OutboxProcessor outboxProcessor;
 
-    @GetMapping("/notification")
-    public String testNotification(@RequestParam(name="userId", defaultValue = "1") long userId) {
-        try {
-            // 테스트 알림 이벤트 생성
-            NotificationEventDto notification = new NotificationEventDto(
-                userId,
-                "테스트 알림",
-                "테스트 알림입니다.!",
-                NotificationEventType.FCM_NOTIFICATION_SEND,
-                OffsetDateTime.now()
-            );
-            
-            notificationService.sendNotificationToUser(notification);
-            
-            log.info("테스트 알림 이벤트 생성 완료: userId={}", userId);
-            return "테스트 알림 이벤트가 생성되었습니다. Outbox 처리를 기다리세요.";
-            
-        } catch (Exception e) {
-            log.error("테스트 알림 생성 실패: {}", e.getMessage());
-            return "테스트 알림 생성 실패: " + e.getMessage();
-        }
+    @GetMapping("/notification/order-success")
+    public String testOrderSuccess(@RequestParam("groupId") long groupId) {
+    	try {
+    		notificationService.createNotificationOrderSuccess(groupId);
+    		return "주문 확정 알림 이벤트가 생성되었습니다.";
+    	} catch (Exception e) {
+    		log.error("주문 확정 알림 생성 실패: {}", e.getMessage());
+    		return "생성 실패: " + e.getMessage();
+    	}
+    }
+
+    @GetMapping("/notification/order-fail")
+    public String testOrderFail(@RequestParam("groupId") long groupId) {
+    	try {
+    		notificationService.createNotificationOrderFail(groupId);
+    		return "주문 실패 알림 이벤트가 생성되었습니다.";
+    	} catch (Exception e) {
+    		log.error("주문 실패 알림 생성 실패: {}", e.getMessage());
+    		return "생성 실패: " + e.getMessage();
+    	}
     }
 
     @GetMapping("/outbox/process")

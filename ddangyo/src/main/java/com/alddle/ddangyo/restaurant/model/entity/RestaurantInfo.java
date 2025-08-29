@@ -1,5 +1,6 @@
 package com.alddle.ddangyo.restaurant.model.entity;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,7 +12,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Document(collection = "restaurant_info")
 public class RestaurantInfo {
 

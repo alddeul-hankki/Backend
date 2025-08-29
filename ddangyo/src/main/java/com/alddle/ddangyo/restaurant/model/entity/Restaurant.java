@@ -1,7 +1,9 @@
 package com.alddle.ddangyo.restaurant.model.entity;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Document(collection = "restaurants")
 public class Restaurant {
     @Id
@@ -20,7 +23,7 @@ public class Restaurant {
     @Field("patsto_nm")
     private String name;
     private LocalDate bizStaDt;
-    private int delvFee;
+    private List<DeliveryFee> delvFee;
     private String delvFeeNm;
     private int reCnt;
     private int goodCnt;
@@ -39,4 +42,12 @@ public class Restaurant {
     private String admtnDongCd;
     private Instant createdAt;
     private List<String> categories;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DeliveryFee {
+        private int orderAmountThreshold;
+        private int fee;
+    }
 }

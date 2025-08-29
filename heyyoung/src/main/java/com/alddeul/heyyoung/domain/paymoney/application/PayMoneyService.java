@@ -7,6 +7,8 @@ import com.alddeul.heyyoung.common.outbox.repository.OutboxRepository;
 import com.alddeul.heyyoung.domain.account.external.deposit.FinanceAccountClient;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.DepositAccountResponse;
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.WithdrawalAccountResponse;
+import com.alddeul.heyyoung.domain.account.model.entity.Account;
+import com.alddeul.heyyoung.domain.account.model.repository.AccountRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.PayMoney;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.RefundIntent;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.TopUpIntent;
@@ -40,6 +42,7 @@ public class PayMoneyService {
     private final OutboxRepository outboxRepository;
     private final TopUpIntentRepository topUpIntentRepository;
     private final RefundIntentRepository refundIntentRepository;
+    private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final UserFacade userFacade;
 
@@ -85,7 +88,9 @@ public class PayMoneyService {
         final String email = payMoneyTransactionRequest.email();
 
         final String userKey = userFacade.getUserKey(email);
-        final String accountNo = payMoneyTransactionRequest.accountNo();
+        final String accountNo = accountRepository.findBySolUser_Email(email)
+                .map(Account::getAccountNumber)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 계좌가 없습니다."));
         final Long amount = payMoneyTransactionRequest.transactionBalance();
         final String summary = payMoneyTransactionRequest.transactionSummary().isEmpty()
                 ? "PayMoney 충전"
@@ -112,7 +117,9 @@ public class PayMoneyService {
         final String email = payMoneyTransactionRequest.email();
 
         final String userKey = userFacade.getUserKey(email);
-        final String accountNo = payMoneyTransactionRequest.accountNo();
+        final String accountNo = accountRepository.findBySolUser_Email(email)
+                .map(Account::getAccountNumber)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 계좌가 없습니다."));
         final Long amount = payMoneyTransactionRequest.transactionBalance();
         final String summary = payMoneyTransactionRequest.transactionSummary().isEmpty()
                 ? "PayMoney 환불"

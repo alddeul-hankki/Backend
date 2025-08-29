@@ -151,7 +151,11 @@ public class OrderService {
             throw new IllegalStateException("모집이 마감된 주문은 취소할 수 없습니다.");
         }
 
-        paymentPort.cancelHeldPayment(order.getId());
+         boolean cancelSuccess =  paymentPort.cancelHeldPayment(order.getId());
+
+        if (!cancelSuccess) {
+            throw new RuntimeException("취소 요청에 실패했습니다.");
+        }
 
         Groups lockedGroup = groupRepository.findByIdWithPessimisticLock(group.getId())
                 .orElseThrow(EntityNotFoundException::new);

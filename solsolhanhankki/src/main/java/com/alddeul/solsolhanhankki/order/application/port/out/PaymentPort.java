@@ -9,10 +9,10 @@ public interface PaymentPort {
 
     boolean  requestPayment(PaymentRequest request);
 
-    void cancelHeldPayment(Long orderId);
+    boolean cancelHeldPayment(Long orderId);
 
-    void requestRefunds(List<RefundRequest> refundRequests);
+    boolean requestRefunds(List<RefundRequest> refundRequests);
 
-    void capturePayments(List<Long> orderIds);
+    boolean capturePayments(List<Long> orderIds);
 
 }

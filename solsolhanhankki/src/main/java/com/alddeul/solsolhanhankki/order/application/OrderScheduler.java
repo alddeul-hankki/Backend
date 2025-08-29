@@ -63,7 +63,10 @@ public class OrderScheduler {
 
         //  결제 서버로 환불 요청
         if (!refundRequests.isEmpty()) {
-            paymentPort.requestRefunds(refundRequests);
+            boolean refundSuccess = paymentPort.requestRefunds(refundRequests);
+            if(!refundSuccess) {
+                throw new RuntimeException("환불 요청에 실패했습니다.");
+            }
             log.info("그룹 ID {}에 대해 총 {}건의 환불 요청 완료.", groupId, refundRequests.size());
         }
 
@@ -72,7 +75,11 @@ public class OrderScheduler {
                 .map(Orders::getId)
                 .collect(Collectors.toList());
 
-        paymentPort.capturePayments(orderIdsToCapture);
+        boolean captureSuccess = paymentPort.capturePayments(orderIdsToCapture);
+
+        if(!captureSuccess) {
+            throw new RuntimeException("최종 결제 요청에 실패했습니다.");
+        }
         log.info("그룹 ID {}에 대해 총 {}건의 최종 결제(Capture) 요청 완료.", groupId, orderIdsToCapture.size());
 
         ddangyoOrderPort.placeGroupOrder(group);

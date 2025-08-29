@@ -39,6 +39,11 @@ public class OrderItems extends BaseIdentityEntity {
     @Column(nullable = false)
     private Integer quantity = 1;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "order_item_categories", joinColumns = @JoinColumn(name = "order_item_id"))
+    @Column(name = "category")
+    private List<String> category;
+
     @Builder
     public OrderItems(Orders order, String menuId, String menuName, String options, Long pricePerItem, Integer quantity) {
         this.order = order;

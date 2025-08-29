@@ -1,6 +1,7 @@
 package com.alddeul.solsolhanhankki.order.model.repository;
 
 import com.alddeul.solsolhanhankki.order.model.entity.Orders;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,4 +19,5 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     Optional<Orders> findByPaymentToken(String paymentToken);
 
+    List<Orders> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 }

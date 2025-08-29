@@ -48,4 +48,23 @@ public class RequestHeader {
         int random = ThreadLocalRandom.current().nextInt(100000, 1000000);
         return date + time + random;
     }
+
+    /**
+     * @param instTxnNo institutionTransactionUniqueNo 입력 받아 OutBox 설계
+     */
+    public static RequestHeader of(String apiName, String apiKey, String userKey, String instTxnNo) {
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+        return RequestHeader.builder()
+                .apiName(apiName)
+                .transmissionDate(date)
+                .transmissionTime(time)
+                .institutionCode(DEFAULT_INSTITUTION_CODE)
+                .fintechAppNo(DEFAULT_FINTECH_APP_NO)
+                .apiServiceCode(apiName)
+                .institutionTransactionUniqueNo(instTxnNo)
+                .apiKey(apiKey)
+                .userKey(userKey)
+                .build();
+    }
 }

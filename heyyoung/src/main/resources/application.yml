@@ -11,14 +11,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 logging:
   level:
-    root: INFO
-    org.springframework.web: INFO
+    root: info
+    org.springframework.web: info
 financial:
   api:
     base-url: ${FINANCIAL_BASE_URL}
     key: ${FINANCIAL_API_KEY}
-    name: ?????
+    name: 쏠쏠한 한끼
     default:
       account-type: ${FINANCIAL_DEFAULT_ACCOUNT_TYPE}

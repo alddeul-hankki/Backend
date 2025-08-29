@@ -38,3 +38,4 @@ out/
 
 ### secret variable ###
 .env
+/solsolhanhankki/src/main/resources/firebase-service-account.json

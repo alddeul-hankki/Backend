@@ -21,9 +21,13 @@ public class FcmTokenService {
     @Transactional
     public FcmTokenDto.Response saveFcmToken(FcmTokenDto.SaveRequest request) {
     	try {
-            fcmTokenRepository.findByToken(request.fcmToken())
-                    .ifPresent(existingToken ->fcmTokenRepository.deleteByToken(request.fcmToken()));
-            fcmTokenRepository.flush();
+    		synchronized(this) {
+    			fcmTokenRepository.findByToken(request.fcmToken())
+                .ifPresent(existingToken ->{
+                	fcmTokenRepository.deleteByToken(request.fcmToken());
+                	fcmTokenRepository.flush();
+                });
+    		}
             
             FcmToken fcmToken = FcmToken.create(
                     request.fcmToken(),

@@ -1,12 +1,19 @@
-package your.package.domain;
+package com.alddeul.heyyoung.timetable.domain;
 
-import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalTime;
+
+import org.hibernate.annotations.Check;
+
+import com.alddeul.heyyoung.common.jpa.base.entity.BaseIdentityEntity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Check;
-
-import java.math.BigDecimal;
 
 @Entity
 @Table(
@@ -34,10 +41,10 @@ public class Lecture extends BaseIdentityEntity {
     private Integer dayOfWeek;
 
     @Column(name = "start_time", nullable = false)
-    private Integer startTime;
+    private LocalTime startTime;
 
     @Column(name = "end_time", nullable = false)
-    private Integer endTime;
+    private LocalTime endTime;
 
     @Column(name = "latitude", precision = 9, scale = 6)
     private BigDecimal latitude;

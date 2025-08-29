@@ -1,9 +1,10 @@
 package com.alddeul.solsolhanhankki.campus.presentation.response;
 
-import com.alddeul.solsolhanhankki.campus.model.entity.PickupZone;
-import lombok.Builder;
-
 import java.math.BigDecimal;
+
+import com.alddeul.solsolhanhankki.campus.model.entity.PickupZone;
+
+import lombok.Builder;
 
 @Builder
 public record PickupZoneResponse(

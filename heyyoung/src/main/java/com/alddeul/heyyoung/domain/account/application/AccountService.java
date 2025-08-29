@@ -118,7 +118,7 @@ public class AccountService {
             throw new RuntimeException("거래내역 조회에 실패하였습니다.");
         }
 
-        return response.data().getRec().getList().stream()
+        return response.data().rec().list().stream()
                 .map(TransactionHistoryResponse::from)
                 .toList();
     }

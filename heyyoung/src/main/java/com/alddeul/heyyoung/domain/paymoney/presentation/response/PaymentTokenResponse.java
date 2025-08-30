@@ -7,7 +7,8 @@ public record PaymentTokenResponse(
         long balance,
         String summary,
         String redirectUrl,
-        String maskedAccountNumber
+        String maskedAccountNumber,
+        Long orderId
 ) {
     public static PaymentTokenResponse from(PaymentIntent paymentIntent, long balance) {
         return new PaymentTokenResponse(
@@ -15,7 +16,8 @@ public record PaymentTokenResponse(
                 balance,
                 paymentIntent.getSummary(),
                 paymentIntent.getRedirectUrl(),
-                masking(paymentIntent.getAccountNumber())
+                masking(paymentIntent.getAccountNumber()),
+                paymentIntent.getOrderId()
         );
     }
 

@@ -3,12 +3,15 @@ package com.alddeul.heyyoung.common.api.external.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Slf4j
 @Getter
 @Builder
 @AllArgsConstructor
@@ -27,8 +30,11 @@ public class RequestHeader {
     private static final String DEFAULT_FINTECH_APP_NO = "001";
 
     public static RequestHeader of(String apiName, String apiKey, String userKey) {
-        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+        ZoneId zone = ZoneId.of("Asia/Seoul");
+
+        String date = LocalDate.now(zone).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String time = LocalTime.now(zone).format(DateTimeFormatter.ofPattern("HHmmss"));
+        log.info("[date]: {}, [time]: {}", date, time);
         String uniqueNo = generateUniqueNo(date, time);
 
         return RequestHeader.builder()

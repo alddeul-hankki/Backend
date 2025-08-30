@@ -18,13 +18,12 @@ import org.hibernate.annotations.Immutable;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "paymoney_ledger",
-        indexes = {
-                @Index(name = "idx_ledger_paymoney_created", columnList = "paymoney_id, created_at"),
-                @Index(name = "idx_ledger_intent", columnList = "intent_id"),
-                @Index(name = "idx_ledger_hold", columnList = "hold_id")
-        },
-        uniqueConstraints = @UniqueConstraint(name = "uk_ledger_idempotency", columnNames = "idempotency_key")
+@Table(
+        name = "paymoney_ledger",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_ledger_paymoney_idem",
+                columnNames = {"paymoney_id","idempotency_key"}
+        )
 )
 @Immutable
 @Check(constraints = "amount > 0 AND balance_after >= 0")
@@ -36,29 +35,23 @@ public class PayMoneyLedger extends BaseSeqEntity {
             foreignKey = @ForeignKey(name = "fk_ledger_paymoney"))
     private PayMoney paymoney;
 
-    // 어떤 인텐트/홀드와 연계된 거래인지 (관리자 수정 등으로 없을 수도 있습니다)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "intent_id",
-            foreignKey = @ForeignKey(name = "fk_ledger_intent"))
-    private PaymentIntent intent;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hold_id",
-            foreignKey = @ForeignKey(name = "fk_ledger_hold"))
-    private PayMoneyHold hold;
-
     public enum PayMoneyLedgerType {
-        HOLD_DEBIT,            // 예약 홀드로 지갑에서 차감
-        HOLD_RELEASE_CREDIT,   // 홀드 해제(만료/실패)로 지갑 환원
-        CAPTURE_DEBIT,         // 공동주문 확정 시 최종 차감
-        REFUND_CREDIT,         // 점주 취소 등 환불로 지갑 환원
-        ADJUSTMENT_DEBIT,      // 운영/정산 조정(차감)
-        ADJUSTMENT_CREDIT      // 운영/정산 조정(가산)
+        DEPOSIT_CREDIT,   // 입금/충전
+        WITHDRAW_DEBIT,   // 출금/환불
+
+        PURCHASE_DEBIT,   // 결제 (지갑 차감)
+        REFUND_CREDIT,    // 환불 (지갑 환급)
+
+        ADJUSTMENT_DEBIT,  // 운영자 수동 차감
+        ADJUSTMENT_CREDIT  // 운영자 수동 가산
     }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)
     private PayMoneyLedgerType type;
+
+    @Column(name = "description", length = 200)
+    private String description;
 
     @Column(name = "amount", nullable = false)
     private long amount;
@@ -69,4 +62,33 @@ public class PayMoneyLedger extends BaseSeqEntity {
 
     @Column(name = "idempotency_key", nullable = false, length = 128, updatable = false)
     private String idempotencyKey;
+
+    // SSAFY API -> paymoney
+    public static PayMoneyLedger deposit(PayMoney w, long amt, String idem, String description) {
+        return create(w, PayMoneyLedgerType.DEPOSIT_CREDIT, amt, w.getAmount(), idem, description);
+    }
+    // paymoney -> SSAFY API
+    public static PayMoneyLedger withdraw(PayMoney w, long amt, String idem, String description) {
+        return create(w, PayMoneyLedgerType.WITHDRAW_DEBIT, amt, w.getAmount(), idem, description);
+    }
+    public static PayMoneyLedger purchase(PayMoney w, long amt, String idem, String description) {
+        return create(w, PayMoneyLedgerType.PURCHASE_DEBIT, amt, w.getAmount(), idem, description);
+    }
+    public static PayMoneyLedger refund(PayMoney w, long amt, String idem, String description) {
+        return create(w, PayMoneyLedgerType.REFUND_CREDIT, amt, w.getAmount(), idem, description);
+    }
+
+    private static PayMoneyLedger create(PayMoney w, PayMoneyLedgerType t, long amt, long balAfter, String idem, String description) {
+        if (w == null) throw new IllegalArgumentException("wallet null");
+        if (amt <= 0) throw new IllegalArgumentException("amount must be positive");
+        if (balAfter < 0) throw new IllegalArgumentException("balance_after >= 0");
+        PayMoneyLedger l = new PayMoneyLedger();
+        l.paymoney = w;
+        l.type = t;
+        l.description = description;
+        l.amount = amt;
+        l.balanceAfter = balAfter;
+        l.idempotencyKey = idem;
+        return l;
+    }
 }

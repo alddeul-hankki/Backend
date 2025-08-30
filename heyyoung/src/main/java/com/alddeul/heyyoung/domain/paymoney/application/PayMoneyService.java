@@ -10,16 +10,20 @@ import com.alddeul.heyyoung.domain.account.external.deposit.dto.WithdrawalAccoun
 import com.alddeul.heyyoung.domain.account.model.entity.Account;
 import com.alddeul.heyyoung.domain.account.model.repository.AccountRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.PayMoney;
+import com.alddeul.heyyoung.domain.paymoney.model.entity.PayMoneyLedger;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.RefundIntent;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.TopUpIntent;
+import com.alddeul.heyyoung.domain.paymoney.model.repository.PayMoneyLedgerRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.PayMoneyRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.RefundIntentRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.TopUpIntentRepository;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyCreateRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyInquiryRequest;
+import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyLedgerRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyTransactionRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyCreateResponse;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyInquiryResponse;
+import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyLedgerResponse;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyTransactionResponse;
 import com.alddeul.heyyoung.domain.user.application.UserFacade;
 import com.alddeul.heyyoung.domain.user.model.entity.SolUser;
@@ -31,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -43,6 +48,7 @@ public class PayMoneyService {
     private final TopUpIntentRepository topUpIntentRepository;
     private final RefundIntentRepository refundIntentRepository;
     private final AccountRepository accountRepository;
+    private final PayMoneyLedgerRepository payMoneyLedgerRepository;
     private final UserRepository userRepository;
     private final UserFacade userFacade;
 
@@ -73,7 +79,7 @@ public class PayMoneyService {
         }
 
         PayMoney payMoney = payMoneyRepository
-                .findByUserEmail(email)
+                .findByUserEmailForUpdate(email)
                 .orElseThrow(() -> new IllegalStateException("PayMoney not found for user: " + email));
 
         Long amount = payMoney.getAmount();
@@ -263,11 +269,19 @@ public class PayMoneyService {
         }
 
         PayMoney payMoney = payMoneyRepository
-                .findByUserEmail(intent.getEmail())
+                .findByUserEmailForUpdate(intent.getEmail())
                 .orElseThrow(() -> new IllegalStateException("PayMoney not found for user: " + intent.getEmail()));
 
         payMoney.addAmount(intent.getAmount());
         payMoneyRepository.save(payMoney);
+        String idem = generateInstitutionTxnNo();;
+        PayMoneyLedger ledger = PayMoneyLedger.deposit(
+                payMoney,
+                intent.getAmount(),
+                idem,
+                "SSAFY 계좌에서 출금"
+        );
+        payMoneyLedgerRepository.save(ledger);
 
         intent.markCredited();
         topUpIntentRepository.save(intent);
@@ -298,11 +312,20 @@ public class PayMoneyService {
         }
 
         PayMoney payMoney = payMoneyRepository
-                .findByUserEmail(intent.getEmail())
+                .findByUserEmailForUpdate(intent.getEmail())
                 .orElseThrow(() -> new IllegalStateException("PayMoney not found for user: " + intent.getEmail()));
+
 
         payMoney.subtractAmount(intent.getAmount());
         payMoneyRepository.save(payMoney);
+        String idem = generateInstitutionTxnNo();;
+        PayMoneyLedger ledger = PayMoneyLedger.withdraw(
+                payMoney,
+                intent.getAmount(),
+                idem,
+                "SSAFY 계좌로 입금"
+        );
+        payMoneyLedgerRepository.save(ledger);
 
         intent.markPreDebited();
         refundIntentRepository.save(intent);
@@ -318,11 +341,28 @@ public class PayMoneyService {
         }
 
         PayMoney payMoney = payMoneyRepository
-                .findByUserEmail(intent.getEmail())
+                .findByUserEmailForUpdate(intent.getEmail())
                 .orElseThrow(() -> new IllegalStateException("PayMoney not found for user: " + intent.getEmail()));
+
+        String idem = generateInstitutionTxnNo();;
+        if (payMoneyLedgerRepository
+                .findByPaymoneyIdAndIdempotencyKey(payMoney.getId(), idem)
+                .isPresent()) {
+            intent.markCompensatedFinished();
+            refundIntentRepository.save(intent);
+            return;
+        }
 
         payMoney.addAmount(intent.getAmount());
         payMoneyRepository.save(payMoney);
+
+        PayMoneyLedger ledger = PayMoneyLedger.refund(
+                payMoney,
+                intent.getAmount(),
+                idem,
+                "SSAFY 계좌 입금 실패로 인한 재충전"
+        );
+        payMoneyLedgerRepository.save(ledger);
 
         intent.markCompensatedFinished();
         refundIntentRepository.save(intent);
@@ -340,6 +380,23 @@ public class PayMoneyService {
         RefundIntent intent = refundIntentRepository.findByIdForUpdate(intentId)
                 .orElseThrow(() -> new IllegalArgumentException("RefundIntent missing: " + intentId));
         intent.markCompensateRequired();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PayMoneyLedgerResponse> getLedgerHistory(PayMoneyLedgerRequest payMoneyLedgerRequest) {
+        final String email = payMoneyLedgerRequest.email();
+
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("email is required");
+        }
+        payMoneyRepository.findByUserEmail(email)
+                .orElseThrow(() -> new IllegalStateException("PayMoney not found for user: " + email));
+
+        return payMoneyLedgerRepository
+                .findAllByPaymoney_User_EmailOrderByCreatedAtDesc(email)
+                .stream()
+                .map(PayMoneyLedgerResponse::toResponse)
+                .toList();
     }
 
     /**

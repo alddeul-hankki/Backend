@@ -7,7 +7,9 @@ import com.alddeul.heyyoung.domain.account.external.deposit.FinanceAccountClient
 import com.alddeul.heyyoung.domain.account.external.deposit.dto.WithdrawalAccountResponse;
 import com.alddeul.heyyoung.domain.account.model.entity.Account;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.PayMoney;
+import com.alddeul.heyyoung.domain.paymoney.model.entity.PayMoneyLedger;
 import com.alddeul.heyyoung.domain.paymoney.model.entity.PaymentIntent;
+import com.alddeul.heyyoung.domain.paymoney.model.repository.PayMoneyLedgerRepository;
 import com.alddeul.heyyoung.domain.paymoney.model.repository.PayMoneyRepository;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PaymentRedirectRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PaymentRequest;
@@ -27,6 +29,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentService {
     private final PayMoneyRepository payMoneyRepository;
+    private final PayMoneyLedgerRepository payMoneyLedgerRepository;
     private final PaymentIntentService paymentIntentService;
     private final FinanceAccountClient financeAccountClient;
     private final UserFacade userFacade;
@@ -99,9 +102,26 @@ public class PaymentService {
                         .build().toUriString();
             }
             payMoney.addAmount(diffAmount);
+            String idem = PayMoneyService.generateInstitutionTxnNo();;
+            PayMoneyLedger ledger = PayMoneyLedger.deposit(
+                    payMoney,
+                    diffAmount,
+                    idem,
+                    "SSAFY 계좌 자동충전"
+            );
+            payMoneyLedgerRepository.save(ledger);
         }
 
         payMoney.subtractAmount(totalAmount);
+        String idem = PayMoneyService.generateInstitutionTxnNo();;
+        PayMoneyLedger ledger = PayMoneyLedger.purchase(
+                payMoney,
+                totalAmount,
+                idem,
+                "땡겨요 주문 결제"
+        );
+        payMoneyLedgerRepository.save(ledger);
+
 
         return UriComponentsBuilder
                 .fromUriString(request.redirectUrl())

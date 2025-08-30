@@ -5,7 +5,6 @@ import com.alddeul.solsolhanhankki.order.infra.dto.PaymentRequest;
 import com.alddeul.solsolhanhankki.order.infra.dto.RefundRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,7 +14,6 @@ import java.util.List;
 
 @Slf4j
 @Component
-@Profile("dev")
 public class PaymentGateway implements PaymentPort {
 
     private final WebClient webClient;

@@ -29,3 +29,7 @@ payment:
 solsol:
   client:
     url: ${SOLSOL_CLIENT_URL}
+
+cluster:
+  api:
+    url:${PROD_CLUSTER_URL}

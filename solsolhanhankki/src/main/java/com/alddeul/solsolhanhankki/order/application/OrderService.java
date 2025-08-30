@@ -1,10 +1,20 @@
 package com.alddeul.solsolhanhankki.order.application;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.alddeul.solsolhanhankki.campus.model.entity.PickupZone;
 import com.alddeul.solsolhanhankki.campus.model.repository.PickupZoneRepository;
 import com.alddeul.solsolhanhankki.notification.service.NotificationService;
 import com.alddeul.solsolhanhankki.order.application.dto.RestaurantInfo;
 import com.alddeul.solsolhanhankki.order.application.port.out.PaymentPort;
+import com.alddeul.solsolhanhankki.order.infra.ClusterClient;
 import com.alddeul.solsolhanhankki.order.infra.RestaurantClient;
 import com.alddeul.solsolhanhankki.order.infra.dto.PaymentRequest;
 import com.alddeul.solsolhanhankki.order.model.entity.Groups;
@@ -21,16 +31,9 @@ import com.alddeul.solsolhanhankki.order.presentation.request.OrderRequest;
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderConfirmationResponse;
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderItemResponse;
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderPreviewResponse;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +46,7 @@ public class OrderService {
     private final RestaurantClient restaurantClient;
     private final PaymentPort paymentPort;
     private final NotificationService notificationService;
+    private final ClusterClient clusterClient;
 
     @Value("${payment.callback.url}")
     private String callbackUrl;
@@ -63,6 +67,11 @@ public class OrderService {
                 .expectedDiscountedDeliveryFee(result.expectedDiscountedDeliveryFee)
                 .paymentAmount(result.paymentAmount)
                 .build();
+    }
+    
+    public void sendNotification(long userId, String storeName) {
+    	List<Long> userIds = clusterClient.getUserIdsBlocking(userId, 5);
+    	notificationService.createRecommendNotification(userIds, storeName);
     }
 
     @Transactional
@@ -128,8 +137,7 @@ public class OrderService {
 
         // 새 그룹이 생성되었고, 첫 주문의 결제 요청이 성공했을 때만 알림 발송
         if (isNewGroup) {
-            List<Long> userIdsToNotify = List.of(1L, 2L, 3L);
-            notificationService.createRecommendNotification(userIdsToNotify, group.getStoreName());
+        	 sendNotification(userId, restaurantInfo.getStoreName());
         }
 
         return OrderConfirmationResponse.from(order);

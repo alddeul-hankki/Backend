@@ -23,3 +23,5 @@ financial:
     name: 쏠쏠한 한끼
     default:
       account-type: ${FINANCIAL_DEFAULT_ACCOUNT_TYPE}
+
+

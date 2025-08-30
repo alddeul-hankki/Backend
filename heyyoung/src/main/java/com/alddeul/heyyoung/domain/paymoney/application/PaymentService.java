@@ -48,7 +48,7 @@ public class PaymentService {
         paymentIntentService.save(paymentIntent);
 
         return UriComponentsBuilder
-                .fromUriString("http://localhost:4173/payment")
+                .fromUriString("https://cfd8d161bbf2.ngrok-free.app/payment")
                 .queryParam("token", token)
                 .build().toUriString();
     }

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/ddangyo/api")
 @RequiredArgsConstructor
 public class RestaurantController {
 

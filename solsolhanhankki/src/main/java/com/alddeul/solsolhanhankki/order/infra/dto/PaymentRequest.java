@@ -15,12 +15,6 @@ public class PaymentRequest {
     private Long amount;
     private String redirectURI;
     private String summary;
-    private PaymentType paymentType; // HOLD 또는 CAPTURE
-
-    public enum PaymentType {
-        HOLD,
-        CAPTURE
-    }
 
     // PaymentRequest.java
     public static PaymentRequest of(Orders order, String storeName, String callbackUrl, long paymentAmount) {
@@ -31,7 +25,6 @@ public class PaymentRequest {
                 .amount(paymentAmount)
                 .redirectURI(callbackUrl)
                 .summary(summary)
-                .paymentType(PaymentRequest.PaymentType.HOLD)
                 .build();
     }
 

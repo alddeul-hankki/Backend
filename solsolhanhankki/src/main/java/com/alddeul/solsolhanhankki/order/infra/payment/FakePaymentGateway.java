@@ -22,7 +22,6 @@ public class FakePaymentGateway implements PaymentPort {
     public boolean requestPayment(PaymentRequest request) {
         String fakePaymentId = "payment-" + UUID.randomUUID();
         log.info("[결제 시스템] {} 요청 수신. 사용자: {}, 주문ID: {}, 금액: {}. Payment ID: {}",
-                request.getPaymentType(),
                 request.getUserId(),
                 request.getOrderId(),
                 request.getAmount(),

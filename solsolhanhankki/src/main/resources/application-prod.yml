@@ -32,4 +32,4 @@ solsol:
 
 cluster:
   api:
-    url:${PROD_CLUSTER_URL}
+    url: ${PROD_CLUSTER_URL}

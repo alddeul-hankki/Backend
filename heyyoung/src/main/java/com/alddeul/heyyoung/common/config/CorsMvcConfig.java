@@ -11,9 +11,14 @@ public class CorsMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
+                .allowedOrigins("https://4f62e65a137a.ngrok-free.app",
+                        "https://cfd8d161bbf2.ngrok-free.app",
+                        "http://localhost:4173",
+                        "https://frontend-bsrb621l1-ar61208-1803s-projects.vercel.app")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
+                .exposedHeaders("*")
+                .allowCredentials(true)
                 .maxAge(3600);
     }
 }

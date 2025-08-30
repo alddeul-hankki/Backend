@@ -24,6 +24,7 @@ import com.alddeul.solsolhanhankki.order.presentation.response.OrderItemResponse
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderPreviewResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -125,6 +127,12 @@ public class OrderService {
 
         if (lockedGroup.getStatus() == GroupStatus.RECRUITING && lockedGroup.isTriggered()) {
             lockedGroup.trigger();
+        }
+
+        // 알림 보내기
+        if(isNewGroup){
+            sendNotification(request.userId(), group.getStoreName());
+            log.info("알림을 성공적으로 보냈습니다.");
         }
 
         PaymentRequest paymentRequest = PaymentRequest.of(order, request.storeName(), callbackUrl, paymentAmount);

@@ -10,9 +10,14 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
-                .allowedMethods("*")
+                .allowedOrigins("https://4f62e65a137a.ngrok-free.app",
+                        "https://cfd8d161bbf2.ngrok-free.app",
+                        "http://localhost:4173",
+                        "https://frontend-bsrb621l1-ar61208-1803s-projects.vercel.app")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                .allowedHeaders("*")
                 .exposedHeaders("*")
-                .allowedHeaders("*");
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }

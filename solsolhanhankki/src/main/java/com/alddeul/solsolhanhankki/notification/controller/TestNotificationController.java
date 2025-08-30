@@ -1,14 +1,13 @@
 package com.alddeul.solsolhanhankki.notification.controller;
 
-import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alddeul.solsolhanhankki.notification.domain.NotificationEventType;
-import com.alddeul.solsolhanhankki.notification.dto.NotificationEventDto;
 import com.alddeul.solsolhanhankki.notification.service.NotificationService;
 import com.alddeul.solsolhanhankki.outbox.service.OutboxProcessor;
 
@@ -39,6 +38,19 @@ public class TestNotificationController {
     public String testOrderFail(@RequestParam("groupId") long groupId) {
     	try {
     		notificationService.createNotificationOrderFail(groupId);
+    		return "주문 실패 알림 이벤트가 생성되었습니다.";
+    	} catch (Exception e) {
+    		log.error("주문 실패 알림 생성 실패: {}", e.getMessage());
+    		return "생성 실패: " + e.getMessage();
+    	}
+    }
+    
+    @GetMapping("/notification/recommend")
+    public String testRecommendTest() {
+    	try {
+    		List<Long> userIds = new ArrayList<Long>();
+    		userIds.add(13L);
+    		notificationService.createRecommendNotification(userIds, "BBQ 동탄 테크노 벨리");
     		return "주문 실패 알림 이벤트가 생성되었습니다.";
     	} catch (Exception e) {
     		log.error("주문 실패 알림 생성 실패: {}", e.getMessage());

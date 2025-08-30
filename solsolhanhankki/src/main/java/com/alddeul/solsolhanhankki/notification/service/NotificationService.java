@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -50,7 +51,7 @@ public class NotificationService {
             for (Orders order : orders) {
                 long userId = order.getUserId();
                 String storeName = order.getGroup().getStoreName();
-                String title = storeName + " 주문이 확정되었어요";
+                String title = storeName + " 주문 성공";
                 String body = "픽업 시간: " + order.getGroup().getPickupAt();
                 String url = "/solsol";
 
@@ -65,6 +66,31 @@ public class NotificationService {
             log.info("주문 확정 알림 생성 실패 {}", e.getMessage());
         }
     }
+    
+    @Transactional
+    public void createRefundNotification(long orderId, long refundMount) {
+        try {
+            Optional<Orders> orders = orderRepository.findById(orderId);
+            
+            orders.ifPresent(order -> {
+            	long userId = order.getUserId();
+                String storeName = order.getGroup().getStoreName();
+                String title = "배달비가 환불";
+                String body = storeName + " 에서 주문한 배달비가 " + refundMount + "원 환불되었습니다.";
+                String url = "/solsol";
+                
+                NotificationEventDto notification = new NotificationEventDto(
+                        userId, title, body, url,
+                        NotificationEventType.FCM_NOTIFICATION_SEND, OffsetDateTime.now()
+                		);
+
+                    sendNotificationToUser(notification);
+            });
+            
+        } catch (Exception e) {
+            log.info("환불 알림 생성 실패 {}", e.getMessage());
+        }
+    }
 
     // 실패 알림만 새 트랜잭션으로 저장 (fully-qualified 사용으로 import 최소화)
     @org.springframework.transaction.annotation.Transactional(
@@ -77,7 +103,7 @@ public class NotificationService {
             for (Orders order : orders) {
                 long userId = order.getUserId();
                 String storeName = order.getGroup().getStoreName();
-                String title = storeName + " 주문이 실패했어요";
+                String title = storeName + " 주문이 실패";
                 String body = "주문이 목표 금액에 도달 하지 못했어요.";
                 String url = "/solsol";
 

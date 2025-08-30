@@ -4,12 +4,16 @@ import com.alddeul.heyyoung.common.api.response.ApiResponse;
 import com.alddeul.heyyoung.domain.paymoney.application.PayMoneyService;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyCreateRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyInquiryRequest;
+import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyLedgerRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PayMoneyTransactionRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyCreateResponse;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyInquiryResponse;
+import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyLedgerResponse;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PayMoneyTransactionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -39,6 +43,12 @@ public class PayMoneyController {
     @PostMapping("/refund")
     public ApiResponse<PayMoneyTransactionResponse> refund(@RequestBody PayMoneyTransactionRequest payMoneyTransactionRequest) {
         PayMoneyTransactionResponse response = payMoneyService.requestRefundPayMoney(payMoneyTransactionRequest);
+        return ApiResponse.ok(response);
+    }
+
+    @PostMapping("/getLedgerHistory")
+    public ApiResponse<List<PayMoneyLedgerResponse>> getLedgerHistory(@RequestBody PayMoneyLedgerRequest payMoneyLedgerRequest) {
+        List<PayMoneyLedgerResponse> response = payMoneyService.getLedgerHistory(payMoneyLedgerRequest);
         return ApiResponse.ok(response);
     }
 }

@@ -39,8 +39,9 @@ public class PaymentService {
         String accountId = accountFacade.getPrimaryAccountByUser(request.userId());
         String summary = request.summary();
         String redirectUrl = request.redirectUrl();
+        Long orderId = request.orderId();
 
-        PaymentIntent paymentIntent = PaymentIntent.of(user, request.amount(), summary, token, accountId, redirectUrl);
+        PaymentIntent paymentIntent = PaymentIntent.of(user, request.amount(), summary, token, accountId, redirectUrl, orderId);
         paymentIntentService.save(paymentIntent);
 
         return UriComponentsBuilder
@@ -89,7 +90,12 @@ public class PaymentService {
                     instTxnNo
             );
             if (!response.success() && ErrorCode.A1014.equals(response.error().responseCode())) {
-                throw new RuntimeException("잔액이 부족하여 결제에 실패했습니다.");
+                log.info("잔액이 부족하여 결제에 실패했습니다.");
+                return UriComponentsBuilder
+                        .fromUriString(request.redirectUrl())
+                        .queryParam("success", false)
+                        .queryParam("orderId", request.orderId())
+                        .build().toUriString();
             }
             payMoney.addAmount(diffAmount);
         }
@@ -98,6 +104,8 @@ public class PaymentService {
 
         return UriComponentsBuilder
                 .fromUriString(request.redirectUrl())
+                .queryParam("success", true)
+                .queryParam("orderId", request.orderId())
                 .build().toUriString();
     }
 }

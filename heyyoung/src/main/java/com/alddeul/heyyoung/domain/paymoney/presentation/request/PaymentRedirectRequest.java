@@ -4,6 +4,7 @@ public record PaymentRedirectRequest(
         Long userId,
         String summary,
         Long amount,
-        String redirectUrl
+        String redirectUrl,
+        Long orderId
 ) {
 }

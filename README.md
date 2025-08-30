@@ -24,3 +24,14 @@
 - Web Server : Nginx
 - 인증서 : Certbot (Let’s Encrypt SSL)
 - CI/CD : GitHub Actions
+
+### 3. 서버 구조
+```
+[Client] 
+   ↓
+[Nginx Reverse Proxy (443)]
+   ├── /api         → 헤이영 캠퍼스 Server (Spring Boot + PostgreSQL)
+   ├── /solsol      → 쏠쏠한 한끼 Server (Spring Boot + PostgreSQL)
+   └── /ddangyo     → 땡겨요 Server (Spring Boot + MongoDB)
+
+```

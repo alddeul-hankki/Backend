@@ -9,17 +9,19 @@ import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Optional;
 
-/**
- * value = "-2" 는 Hibernate의 transaction이 lock 되어 있으면 스킵하라는 SKIP LOCKED 입니다.
- */
 @Repository
 public interface OutboxRepository extends JpaRepository<Outbox, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2")) // SKIP LOCKED
     Optional<Outbox> findFirstByStatusAndNextRunAtLessThanEqualOrderByNextRunAtAscIdAsc(
             Outbox.OutboxStatus status, OffsetDateTime now
+    );
+
+    boolean existsByIntentIdAndTypeAndStatusIn(
+            Long intentId, Outbox.OutboxType type, Collection<Outbox.OutboxStatus> statuses
     );
 }

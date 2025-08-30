@@ -1,28 +1,22 @@
 package com.alddeul.solsolhanhankki.order.presentation;
 
-import java.io.IOException;
-import java.net.URI;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.alddeul.solsolhanhankki.notification.service.NotificationService;
 import com.alddeul.solsolhanhankki.order.application.OrderService;
 import com.alddeul.solsolhanhankki.order.presentation.request.CancelRequest;
 import com.alddeul.solsolhanhankki.order.presentation.request.OrderPreviewRequest;
 import com.alddeul.solsolhanhankki.order.presentation.request.OrderRequest;
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderConfirmationResponse;
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderPreviewResponse;
-
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URI;
+
+@Slf4j
 @RestController
 @RequestMapping("/sol/api/orders")
 @RequiredArgsConstructor
@@ -42,6 +36,10 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderConfirmationResponse> createOrder(@RequestBody OrderRequest orderRequest) {
         OrderConfirmationResponse response = orderService.createOrder(orderRequest);
+
+        log.info("✅ [OrderController] API 요청 수신: {}", orderRequest);
+        log.info("➡️ [OrderController] deadlineAt 수신 값: {}", orderRequest.deadlineAt());
+        log.info("➡️ [OrderController] pickupAt 수신 값: {}", orderRequest.pickupAt());
         return ResponseEntity.created(URI.create("/api/orders/" + response.orderId())).body(response);
     }
 

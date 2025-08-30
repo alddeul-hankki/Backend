@@ -69,17 +69,17 @@ public class Groups extends BaseIdentityEntity {
     private Long version;
 
     @Builder
-    public Groups(PickupZone pickupZone, String storeId, String storeName, Long minOrderPrice, List<DeliveryFeePolicy> deliveryFeePolicies, Long triggerPrice, OffsetDateTime deadlineAt, OffsetDateTime pickupAt) {
+    public Groups(PickupZone pickupZone, String storeId, String storeName, Long minOrderPrice, List<DeliveryFeePolicy> deliveryFeePolicies, Long triggerPrice, OffsetDateTime deadlineAt, OffsetDateTime pickupAt, OffsetDateTime scheduledDeadlineAt, OffsetDateTime scheduledPickupAt) {
         this.pickupZone = pickupZone;
         this.storeId = storeId;
         this.storeName = storeName;
         this.minOrderPrice = minOrderPrice;
         this.deliveryFeePolicies = deliveryFeePolicies;
         this.triggerPrice = triggerPrice;
-        this.scheduledDeadlineAt = scheduledDeadlineAt;
-        this.scheduledPickupAt = scheduledPickupAt;
         this.deadlineAt = deadlineAt;
         this.pickupAt = pickupAt;
+        this.scheduledDeadlineAt = scheduledDeadlineAt;
+        this.scheduledPickupAt = scheduledPickupAt;
     }
 
     /**

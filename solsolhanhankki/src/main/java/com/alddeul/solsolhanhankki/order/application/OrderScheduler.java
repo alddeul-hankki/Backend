@@ -1,5 +1,6 @@
 package com.alddeul.solsolhanhankki.order.application;
 
+import com.alddeul.solsolhanhankki.notification.service.NotificationService;
 import com.alddeul.solsolhanhankki.order.application.port.out.DdangyoOrderPort;
 import com.alddeul.solsolhanhankki.order.application.port.out.PaymentPort;
 import com.alddeul.solsolhanhankki.order.infra.dto.RefundRequest;
@@ -29,6 +30,7 @@ public class OrderScheduler {
     private final OrderRepository orderRepository;
     private final PaymentPort paymentPort;
     private final DdangyoOrderPort ddangyoOrderPort; // 가상의 땡겨요 주문 서버
+    private final NotificationService notificationService;
 
     @Scheduled(fixedRate = 30000)
     public void processTriggeredGroups() {
@@ -87,5 +89,22 @@ public class OrderScheduler {
         group.completeOrder();
         orders.forEach(Orders::confirm);
         log.info("그룹 정산 및 상태 변경 완료. groupId: {}", groupId);
+        // 주문 성공 알림 발송
+        notificationService.createNotificationOrderSuccess(groupId);
+    }
+
+    @Scheduled(fixedRate = 30000)
+    @Transactional
+    public void processFailedGroups() {
+        List<Groups> failedGroups = groupRepository.findAllByStatusAndDeadlineAtBefore(GroupStatus.RECRUITING, OffsetDateTime.now());
+
+        for (Groups group : failedGroups) {
+            if (group.getCurrentTotalPrice() < group.getTriggerPrice()) {
+                log.info("시간 만료 및 목표 금액 미달성 그룹 처리: groupId={}", group.getId());
+                group.cancel();
+                // 주문 실패 알림 발송
+                notificationService.createNotificationOrderFail(group.getId());
+            }
+        }
     }
 }

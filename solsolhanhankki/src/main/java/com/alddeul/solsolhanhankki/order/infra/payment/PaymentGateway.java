@@ -15,7 +15,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-@Profile("prod")
+@Profile("dev")
 public class PaymentGateway implements PaymentPort {
 
     private final WebClient webClient;
@@ -25,23 +25,30 @@ public class PaymentGateway implements PaymentPort {
     }
 
     @Override
-    public boolean requestPayment(PaymentRequest request) {
+    public String requestPayment(PaymentRequest request) {
         log.info("[실제 결제 시스템] 결제 요청. 사용자: {}, 주문ID: {}, 금액: {}",
                 request.getUserId(), request.getOrderId(), request.getAmount());
 
-        Boolean success = webClient.post()
-                .uri("/api/payments")
+        return webClient.post()
+                .uri("/api/payments") // 결제 서버의 API
                 .bodyValue(request)
-                .retrieve()
-                .onStatus(httpStatus -> httpStatus.is4xxClientError(), clientResponse ->
-                        handleClientError(clientResponse, "결제 요청 실패"))
-                .onStatus(httpStatus -> httpStatus.is5xxServerError(), clientResponse ->
-                        handleServerError(clientResponse, "결제 서버 오류"))
-                .bodyToMono(Boolean.class)
-                .onErrorReturn(false)
-                .block();
+                .exchangeToMono(response -> {
+                    System.out.println("responseCode"+response.statusCode());
 
-        return Boolean.TRUE.equals(success);
+                    if (response.statusCode().is2xxSuccessful()) {
+                        // 2. 응답 Body에서 URL 문자열을 직접 추출합니다.
+                        return response.bodyToMono(String.class)
+                                .doOnNext(redirectUrl -> log.info("결제 페이지 리다이렉트 URL 수신: {}", redirectUrl));
+                    }
+
+                    // 3. 200번대 성공이 아닌 모든 경우는 에러로 처리합니다.
+                    return response.bodyToMono(String.class)
+                            .flatMap(errorBody -> {
+                                log.error("결제 요청 실패. 상태코드: {}, 응답: {}", response.statusCode(), errorBody);
+                                return Mono.error(new RuntimeException("결제 서버로부터 예상치 못한 응답: " + response.statusCode()));
+                            });
+                })
+                .block();
     }
 
     @Override

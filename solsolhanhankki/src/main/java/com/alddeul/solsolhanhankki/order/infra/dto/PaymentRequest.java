@@ -13,7 +13,7 @@ public class PaymentRequest {
     private Long userId;
     private Long orderId;
     private Long amount;
-    private String redirectURI;
+    private String redirectUrl;
     private String summary;
 
     // PaymentRequest.java
@@ -23,7 +23,7 @@ public class PaymentRequest {
                 .userId(order.getUserId())
                 .orderId(order.getId())
                 .amount(paymentAmount)
-                .redirectURI(callbackUrl)
+                .redirectUrl(callbackUrl)
                 .summary(summary)
                 .build();
     }

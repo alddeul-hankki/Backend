@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PaymentPort {
 
-    boolean  requestPayment(PaymentRequest request);
+    String requestPayment(PaymentRequest request);
 
     boolean cancelHeldPayment(Long orderId);
 

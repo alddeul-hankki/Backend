@@ -8,12 +8,14 @@ import com.alddeul.heyyoung.domain.paymoney.presentation.request.PaymentRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.request.PaymentTokenRequest;
 import com.alddeul.heyyoung.domain.paymoney.presentation.response.PaymentTokenResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
@@ -21,11 +23,10 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping()
-    public ResponseEntity<?> redirectPaySystem(@RequestBody PaymentRedirectRequest request) {
+    public ResponseEntity<String> redirectPaySystem(@RequestBody PaymentRedirectRequest request) {
         String redirectUrl = paymentService.redirectPayment(request);
-        return ResponseEntity.status(HttpStatus.FOUND)  // 302
-                .location(URI.create(redirectUrl))
-                .build();
+        log.info(redirectUrl);
+        return ResponseEntity.ok(redirectUrl);
     }
 
     @PostMapping("/token")

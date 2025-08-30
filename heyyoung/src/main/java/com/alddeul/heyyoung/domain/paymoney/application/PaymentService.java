@@ -91,6 +91,7 @@ public class PaymentService {
             );
             if (!response.success() && ErrorCode.A1014.equals(response.error().responseCode())) {
                 log.info("잔액이 부족하여 결제에 실패했습니다.");
+                log.info(request.redirectUrl());
                 return UriComponentsBuilder
                         .fromUriString(request.redirectUrl())
                         .queryParam("success", false)

@@ -1,14 +1,5 @@
 package com.alddeul.solsolhanhankki.order.application;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alddeul.solsolhanhankki.campus.model.entity.PickupZone;
 import com.alddeul.solsolhanhankki.campus.model.repository.PickupZoneRepository;
 import com.alddeul.solsolhanhankki.notification.service.NotificationService;
@@ -31,9 +22,16 @@ import com.alddeul.solsolhanhankki.order.presentation.request.OrderRequest;
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderConfirmationResponse;
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderItemResponse;
 import com.alddeul.solsolhanhankki.order.presentation.response.OrderPreviewResponse;
-
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -130,17 +128,21 @@ public class OrderService {
         }
 
         PaymentRequest paymentRequest = PaymentRequest.of(order, request.storeName(), callbackUrl, paymentAmount);
-        boolean paymentSuccess = paymentPort.requestPayment(paymentRequest);
-        if (!paymentSuccess) {
-            throw new RuntimeException("결제 서버 요청에 실패했습니다.");
+
+        // 1. 이제 boolean이 아닌 String 타입의 URL을 받습니다.
+        String redirectUrl = paymentPort.requestPayment(paymentRequest);
+
+        if (redirectUrl == null || redirectUrl.isBlank()) {
+            throw new RuntimeException("결제 서버로부터 리다이렉트 URL을 받지 못했습니다.");
         }
 
-        // 새 그룹이 생성되었고, 첫 주문의 결제 요청이 성공했을 때만 알림 발송
-        if (isNewGroup) {
-        	 sendNotification(userId, restaurantInfo.getStoreName());
-        }
+        return OrderConfirmationResponse.builder()
+                .orderId(order.getId())
+                .storeName(order.getGroup().getStoreName())
+                .paymentAmount(order.getMenuTotalPrice() + order.getInitialDeliveryFee())
+                .paymentRedirectUrl(redirectUrl)
+                .build();
 
-        return OrderConfirmationResponse.from(order);
     }
 
     private OrderCalculationResult calculateOrderDetailsForPreview(String storeId, Long pickupZoneId, OffsetDateTime deadlineAt, List<OrderItemRequest> orderItems) {
@@ -218,6 +220,16 @@ public class OrderService {
     public OrderConfirmationResponse getOrderByPaymentToken(String paymentToken) {
         Orders order = orderRepository.findByPaymentToken(paymentToken)
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 접근입니다."));
-        return OrderConfirmationResponse.from(order);
+
+        Groups group = order.getGroup();
+
+        return OrderConfirmationResponse.builder()
+                .orderId(order.getId())
+                .storeName(order.getGroup().getStoreName())
+                .paymentAmount(order.getMenuTotalPrice() + order.getInitialDeliveryFee())
+                .pickupZoneName(group.getPickupZone().getName())
+                .deadlineAt(group.getDeadlineAt())
+                .pickupAt(group.getPickupAt())
+                .build();
     }
 }

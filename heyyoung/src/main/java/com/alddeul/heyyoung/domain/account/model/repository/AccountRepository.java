@@ -11,5 +11,9 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findByAccountNumberIn(List<String> accountNumbers);
 
+    List<Account> findBySolUserId(Long solUserId);
+
+    Account findByAccountNumber(String accountNumber);
+  
     Optional<Account> findBySolUser_Email(String email);
 }
